@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neumorphic Scripture Viewer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base light mode variables */
+        :root {
+            --bg-color: #e0e0e0;
+            --text-color: #555;
+            --highlight-color: #ffffff;
+            --shadow-color: #bebebe;
+            --card-bg-color: #e0e0e0;
+            --menu-bg-color: #e0e0e0; /* Menu background */
+            --menu-item-hover-bg: #d0d0d0;
+            --menu-border-color: #c0c0c0;
+            --menu-header-color: #444;
+            --switch-bg-inactive: #ccc;
+            --switch-bg-active: #2b8cc4;
+            --switch-handle-bg: white;
+            --faq-bg-color: #fff;
+            --faq-border-color: #ccc;
+            --faq-hover-bg: #f0f0f0;
+            --faq-text-color: #555;
+            --faq-header-color: #333;
+            --back-button-color: #3b82f6;
+            --back-button-hover-color: #2563eb;
+            --icon-color: #333;
+            --gradient-start: #e0e0e0;
+            --gradient-end: #f8f8f8;
+        }
+
+        /* Dark mode variables */
+        body.dark {
+            --bg-color: #1a202c;
+            --text-color: #f7fafc;
+            --highlight-color: #2d3748;
+            --shadow-color: #0d1117;
+            --card-bg-color: #1a202c;
+            --menu-bg-color: #2d3748; /* Dark menu background */
+            --menu-item-hover-bg: #4a5568;
+            --menu-border-color: #4a5568;
+            --menu-header-color: #f7fafc;
+            --switch-bg-inactive: #4a5568;
+            --switch-bg-active: #2b8cc4; /* Keep active color consistent? */
+            --switch-handle-bg: #1a202c;
+            --faq-bg-color: #2d3748;
+            --faq-border-color: #4a5568;
+            --faq-hover-bg: #4a5568;
+            --faq-text-color: #cbd5e0;
+            --faq-header-color: #f7fafc;
+            --back-button-color: #60a5fa; /* Lighter blue for dark */
+            --back-button-hover-color: #93c5fd;
+            --icon-color: #f7fafc;
+            --gradient-start: #1a202c;
+            --gradient-end: #2d3748;
+        }
+
+        /* Apply variables */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Merriweather', serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* Keep body centering the card */
+            padding: 1rem; /* Base padding */
+            padding-bottom: 6rem; /* Add padding at the bottom to avoid overlap with fixed button */
+            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+            background-size: 100% 100%;
+            animation: gradientShift 10s ease infinite;
+            overflow-x: hidden; /* Prevent horizontal scrollbar */
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- Neumorphic Styles --- */
+        .neumorphic-button {
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-color);
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem; /* Size for character icon */
+            line-height: 1; /* Ensure icon is centered vertically */
+            color: var(--text-color);
+            transition: all 0.2s ease-in-out;
+            box-shadow: 5px 5px 10px var(--shadow-color),
+                        -5px -5px 10px var(--highlight-color);
+            position: relative;
+        }
+
+        .neumorphic-button:active {
+            box-shadow: inset 4px 4px 8px var(--shadow-color),
+                        inset -4px -4px 8px var(--highlight-color);
+            color: var(--text-color);
+            transform: scale(0.96);
+        }
+
+        .neumorphic-card {
+            padding: 1.5rem;
+            border-radius: 1rem;
+            background: var(--card-bg-color);
+            box-shadow: 8px 8px 16px var(--shadow-color),
+                        -8px -8px 16px var(--highlight-color);
+            width: 90%;
+            max-width: 500px;
+            min-height: 250px; /* Ensure minimum height */
+            display: flex;
+            flex-direction: column; /* Stack children vertically */
+            align-items: center; /* Center children horizontally */
+            justify-content: center; /* Center content vertically */
+            position: relative; /* Changed from absolute for body flex centering */
+            /* Removed top, left, transform */
+            transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 1;
+            opacity: 1;
+            visibility: visible;
+        }
+        /* Hide card when FAQ is shown */
+        body.faq-mode .neumorphic-card {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+
+        @media (min-width: 640px) {
+            .neumorphic-card {
+                padding: 2rem;
+            }
+            body {
+                padding: 2rem;
+                 padding-bottom: 7rem; /* More bottom padding on larger screens */
+            }
+        }
+
+        /* --- Verse Display --- */
+        /* Container for verse text and reference */
+        #verse-content-container {
+            width: 100%; /* Take full width of card */
+            text-align: center; /* Center text within */
+        }
+
+        #verse-reference-container {
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        #verse-reference {
+            font-style: italic;
+            opacity: 0.7;
+            transition: color 0.3s ease;
+            color: var(--text-color);
+        }
+
+        #verse-text {
+            transition: color 0.3s ease;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            line-height: 1.7;
+            text-align: center;
+             margin-bottom: 1rem; /* Add margin below text */
+        }
+        @media (min-width: 640px) {
+            #verse-text {
+                font-size: 1.25rem;
+            }
+        }
+
+        /* --- Refresh Button Container --- */
+        #refresh-button-container {
+            position: fixed; /* Position relative to viewport */
+            bottom: 2rem;    /* Distance from bottom */
+            left: 50%;       /* Center horizontally */
+            transform: translateX(-50%);
+            z-index: 5;      /* Ensure it's above background but below menu/FAQ */
+            transition: opacity 0.3s ease, visibility 0.3s ease; /* Add transitions */
+            opacity: 1;      /* Visible by default when home */
+            visibility: visible;
+        }
+        /* Hide button when FAQ is shown */
+        body.faq-mode #refresh-button-container {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+
+        /* --- Dark/Light Mode Switch --- */
+        .switch {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .switch.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--switch-bg-inactive);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: var(--switch-handle-bg);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--switch-bg-active);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--switch-bg-active);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* --- Hamburger Menu Button --- */
+        #menu-button {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 11;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #menu-button.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .menu-icon {
+            width: 1.5rem;
+            height: 0.2rem;
+            background-color: var(--text-color);
+            border-radius: 0.1rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .menu-icon::before,
+        .menu-icon::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 1.5rem;
+            height: 0.2rem;
+            background-color: var(--text-color);
+            border-radius: 0.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .menu-icon::before {
+            top: -0.5rem;
+        }
+
+        .menu-icon::after {
+            top: 0.5rem;
+        }
+
+        #menu-button.active .menu-icon {
+            background-color: transparent;
+        }
+
+        #menu-button.active .menu-icon::before {
+            top: 0;
+            transform: rotate(45deg);
+        }
+
+        #menu-button.active .menu-icon::after {
+            top: 0;
+            transform: rotate(-45deg);
+        }
+
+
+        /* --- Side Menu Styles --- */
+        #side-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 280px;
+            background: var(--menu-bg-color);
+            box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1),
+                        inset -2px 0 5px var(--shadow-color),
+                        inset 2px 0 5px var(--highlight-color);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out, background-color 0.3s ease, box-shadow 0.3s ease;
+            z-index: 12;
+            padding: 1rem;
+            padding-top: 5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-color);
+        }
+
+        #side-menu.active {
+            transform: translateX(0);
+        }
+
+        #side-menu .menu-header {
+            padding: 1rem 0.5rem;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--menu-header-color);
+            margin-bottom: 1rem;
+            text-shadow: 1px 1px 1px var(--shadow-color),
+                         -1px -1px 1px var(--highlight-color);
+        }
+
+        #side-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+        }
+
+        #side-menu ul li, #side-menu .faq-link {
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 0.75rem;
+            background: var(--menu-bg-color);
+            color: var(--text-color);
+            box-shadow: 3px 3px 6px var(--shadow-color),
+                        -3px -3px 6px var(--highlight-color);
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        #side-menu ul li:hover, #side-menu .faq-link:hover {
+             background: var(--menu-item-hover-bg);
+        }
+
+        #side-menu ul li:active, #side-menu .faq-link:active {
+            box-shadow: inset 2px 2px 4px var(--shadow-color),
+                        inset -2px -2px 4px var(--highlight-color);
+            transform: scale(0.98);
+            color: var(--text-color);
+        }
+
+        #side-menu .version-select > p {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 1rem;
+            color: var(--menu-header-color);
+            box-shadow: none;
+            background: transparent;
+            cursor: default;
+        }
+        #side-menu .version-select > ul {
+            padding-left: 1rem;
+        }
+        #side-menu .version-select > ul li {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        #side-menu ul li.active {
+            box-shadow: inset 3px 3px 6px var(--shadow-color),
+                        inset -3px -3px 6px var(--highlight-color);
+            color: var(--text-color);
+            font-weight: bold;
+        }
+
+        #side-menu .pause-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            cursor: default;
+        }
+         #side-menu .pause-toggle p {
+            font-weight: bold;
+             margin-right: 1rem;
+             color: var(--menu-header-color);
+        }
+
+        #side-menu .pause-toggle .switch {
+            position: relative;
+            top: auto;
+            right: auto;
+            opacity: 1;
+            visibility: visible;
+            margin-left: auto;
+        }
+
+        #side-menu .faq-link {
+            margin-top: auto;
+            text-align: center;
+            display: block;
+            text-decoration: none;
+        }
+
+        /* --- FAQ Page Styles --- */
+        .faq-page {
+            min-height: 100vh;
+            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+            padding: 2rem;
+            font-family: 'Merriweather', serif;
+            color: var(--faq-text-color);
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 15;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            overflow-y: auto; /* Allow scrolling if content overflows */
+        }
+
+        .faq-page.visible {
+            opacity: 1;
+            display: block;
+        }
+
+
+        .faq-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        .faq-header {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: var(--faq-header-color);
+            text-shadow: 1px 1px 2px var(--shadow-color),
+                         -1px -1px 2px var(--highlight-color);
+        }
+
+        .accordion-item {
+            margin-bottom: 1rem;
+            border-radius: 0.75rem;
+            background-color: var(--faq-bg-color);
+            transition: all 0.3s ease;
+            box-shadow: 4px 4px 8px var(--shadow-color),
+                        -4px -4px 8px var(--highlight-color);
+            overflow: hidden;
+        }
+
+        .accordion-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 12px var(--shadow-color),
+                        -6px -6px 12px var(--highlight-color);
+        }
+
+        .accordion-trigger {
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            color: var(--faq-header-color);
+            text-align: left;
+            border: none;
+            background: transparent;
+        }
+
+        .accordion-trigger:hover {
+            background-color: var(--faq-hover-bg);
+        }
+
+        .accordion-content {
+            padding: 0 1.5rem 1rem 1.5rem;
+            line-height: 1.7;
+            color: var(--faq-text-color);
+            display: none;
+            border-top: 1px solid var(--faq-border-color);
+            margin-top: -1px;
+        }
+
+        .accordion-content.show {
+            display: block;
+        }
+
+        .icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            stroke-width: 2;
+            color: var(--icon-color);
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .rotate {
+            transform: rotate(180deg);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            color: var(--back-button-color);
+            cursor: pointer;
+            transition: color 0.2s ease;
+            margin-bottom: 2rem;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+        .back-button:hover {
+            color: var(--back-button-hover-color);
+            background-color: rgba(0,0,0,0.05);
+        }
+        body.dark .back-button:hover {
+             background-color: rgba(255,255,255,0.08);
+        }
+        .back-button svg {
+             transform: rotate(-90deg);
+        }
+
+
+    </style>
+</head>
+<body class="home-mode"> <button id="menu-button" class="neumorphic-button">
+        <div class="menu-icon"></div>
+    </button>
+
+    <label class="switch" id="mode-switch-container">
+        <input type="checkbox" id="mode-switch">
+        <span class="slider round"></span>
+    </label>
+
+    <div id="side-menu">
+        <div class="menu-header">Menu</div>
+        <ul>
+            <li class="version-select">
+                <p>Version Selection</p>
+                <ul>
+                    <li data-version="esv">English Standard (ESV)</li>
+                    <li data-version="nlt">New Living (NLT)</li>
+                </ul>
+            </li>
+            <li class="pause-toggle">
+                <p>Auto Advance</p>
+                <label class="switch">
+                    <input type="checkbox" id="pause-switch" checked> <span class="slider round"></span>
+                </label>
+            </li>
+        </ul>
+        <a href="#faq" class="faq-link">Frequently Asked Questions</a>
+    </div>
+
+    <div class="neumorphic-card" id="main-card">
+        <div id="verse-content-container">
+            <p id="verse-text" class="w-full">
+                Loading verse...
+            </p>
+            <div id="verse-reference-container">
+                <p id="verse-reference" class="font-semibold">
+                    ---
+                </p>
+            </div>
+        </div>
+        </div>
+
+    <div id="refresh-button-container">
+        <button id="refresh-button" class="neumorphic-button" aria-label="New Verse">
+            &rarr; </button>
+    </div>
+
+    <div id="faq-page" class="faq-page"> <div class="faq-content">
+            <a href="#" class="back-button" id="back-to-meditation">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2">
+                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                </svg>
+                Back to Meditation
+            </a>
+
+            <h1 class="faq-header">Frequently Asked Questions</h1>
+
+            <div class="accordion-item">
+                <div class="accordion-trigger">
+                    How are verses selected?
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
+                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="accordion-content">
+                    Verses are carefully curated to focus on life application, wisdom, comfort, and guidance. Each verse is chosen for its ability to inspire reflection and meditation. Clicking the refresh button or enabling auto-advance displays a random verse from the selected version.
+                </div>
+            </div>
+            <div class="accordion-item">
+                 <div class="accordion-trigger">
+                     What Bible versions are available?
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
+                         <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                     </svg>
+                 </div>
+                 <div class="accordion-content">
+                     The app currently offers two popular Bible translations:
+                     <ul class="list-disc pl-5 mt-2">
+                         <li>English Standard Version (ESV)</li>
+                         <li>New Living Translation (NLT)</li>
+                     </ul>
+                     You can switch between them in the menu.
+                 </div>
+             </div>
+             <div class="accordion-item">
+                 <div class="accordion-trigger">
+                     How does auto-advance work?
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
+                         <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                     </svg>
+                 </div>
+                 <div class="accordion-content">
+                     When auto-advance is enabled (using the toggle in the menu), the app will automatically display a new random verse after about 15 seconds. This allows for hands-free meditation. You can disable it if you prefer to get new verses manually using the refresh button.
+                 </div>
+             </div>
+             <div class="accordion-item">
+                 <div class="accordion-trigger">
+                     Where is the verse reference?
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
+                         <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                     </svg>
+                 </div>
+                 <div class="accordion-content">
+                     The verse reference (e.g., John 3:16) appears below the main scripture text inside the card. It's designed to be slightly less prominent initially, allowing you to focus on the message first.
+                 </div>
+             </div>
+              <div class="accordion-item">
+                 <div class="accordion-trigger">
+                     Why do the menu and dark mode buttons disappear?
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
+                         <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                     </svg>
+                 </div>
+                 <div class="accordion-content">
+                    To maintain a clean and focused reading experience, the menu button and dark mode switch appear only when you first interact with the screen (click or tap). If you then click or tap away from these buttons or the open menu, they will hide again until your next interaction.
+                 </div>
+             </div>
+             </div>
+    </div>
+
+    <script>
+        // --- Data: Scripture Verses ---
+        const scriptures = [
+             { text: "The LORD is my shepherd, I lack nothing. He makes me lie down in green pastures, he leads me beside quiet waters, he refreshes my soul.", reference: "Psalm 23:1-3", version: "esv" },
+             { text: "I can do all this through him who gives me strength.", reference: "Philippians 4:13", version: "esv" },
+             { text: "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.", reference: "John 3:16", version: "nlt" },
+             { text: "Trust in the LORD with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.", reference: "Proverbs 3:5-6", version: "nlt" },
+             { text: "Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go.", reference: "Joshua 1:9", version: "esv" },
+             { text: "The Lord is my light and my salvation— whom shall I fear? The Lord is the stronghold of my life— of whom shall I be afraid?", reference: "Psalm 27:1", version: "nlt" },
+             { text: "Come to me, all you who are weary and burdened, and I will give you rest.", reference: "Matthew 11:28", version: "esv" },
+             { text: "And we know that in all things God works for the good of those who love him, who have been called according to his purpose.", reference: "Romans 8:28", version: "esv" },
+             { text: "For I know the plans I have for you,” declares the Lord, “plans to prosper you and not to harm you, plans to give you hope and a future.", reference: "Jeremiah 29:11", version: "nlt" },
+             { text: "Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.", reference: "Philippians 4:6-7", version: "esv" }
+        ];
+
+        // --- State ---
+        let currentVerseIndex = -1; // Start at -1 to ensure the first random pick is always new
+        let verseInterval = null;
+        let isDarkMode = false;
+        let isMenuOpen = false;
+        let selectedVersion = 'esv'; // Default version
+        let autoAdvance = true; // Default to true
+        let controlsVisible = false; // State for menu/switch visibility
+        let initialInteractionDone = false; // Track if the first click happened
+
+        // --- DOM Elements ---
+        const verseTextElement = document.getElementById('verse-text');
+        const verseReferenceElement = document.getElementById('verse-reference');
+        const refreshButton = document.getElementById('refresh-button');
+        const refreshButtonContainer = document.getElementById('refresh-button-container'); // Added container ref
+        const modeSwitch = document.getElementById('mode-switch');
+        const body = document.body;
+        const modeSwitchContainer = document.getElementById('mode-switch-container');
+        const menuButton = document.getElementById('menu-button');
+        const sideMenu = document.getElementById('side-menu');
+        const versionSelectItems = document.querySelectorAll('#side-menu .version-select li[data-version]');
+        const pauseSwitch = document.getElementById('pause-switch');
+        const faqLink = document.querySelector('#side-menu .faq-link');
+        const faqPage = document.getElementById('faq-page');
+        const backToMeditationLink = document.getElementById('back-to-meditation');
+        const accordionTriggers = document.querySelectorAll('.accordion-trigger');
+        const mainCard = document.getElementById('main-card');
+        const verseContentContainer = document.getElementById('verse-content-container');
+
+        // --- Functions ---
+
+        // Filter scriptures based on selected version
+        function getFilteredScriptures() {
+            return scriptures.filter(verse => verse.version === selectedVersion);
+        }
+
+        // Display a specific verse by its index in the filtered list
+        function displayVerseByIndex(index) {
+             const filteredScriptures = getFilteredScriptures();
+             if (!filteredScriptures || filteredScriptures.length === 0) {
+                 verseTextElement.textContent = `No scriptures available for ${selectedVersion.toUpperCase()}.`;
+                 verseReferenceElement.textContent = "";
+                 currentVerseIndex = -1; // Reset index
+                 return;
+             }
+              if (index < 0 || index >= filteredScriptures.length) {
+                  console.error("Invalid index for displayVerseByIndex:", index);
+                  return; // Avoid errors with invalid index
+              }
+
+             currentVerseIndex = index; // Update global index to the displayed verse's index
+             const verse = filteredScriptures[index];
+             verseTextElement.textContent = verse.text;
+             verseReferenceElement.textContent = `${verse.reference} (${verse.version.toUpperCase()})`; // Show version
+        }
+
+
+        // Show a new random verse (different from the current one)
+        function showRandomVerse() {
+            const filteredScriptures = getFilteredScriptures();
+            if (!filteredScriptures || filteredScriptures.length === 0) {
+                displayVerseByIndex(-1); // Show empty state
+                return;
+            }
+            if (filteredScriptures.length === 1) {
+                displayVerseByIndex(0); // Only one verse, just display it
+                return;
+            }
+
+            let randomIndex;
+            // Keep picking a random index until it's different from the current one
+            do {
+                randomIndex = Math.floor(Math.random() * filteredScriptures.length);
+            } while (randomIndex === currentVerseIndex);
+
+            displayVerseByIndex(randomIndex); // Display the new random verse
+
+            if (autoAdvance) {
+                resetInterval();
+            }
+            // console.log("Random verse shown. Filtered Index:", currentVerseIndex);
+        }
+
+        // Renamed showNextVerse to make its purpose clear (it's now random)
+        const showNewVerse = showRandomVerse;
+
+
+        function startInterval() {
+            clearInterval(verseInterval); // Clear any existing interval
+            if (autoAdvance) {
+                 // console.log("Starting interval (15s) for random verse");
+                 verseInterval = setInterval(showNewVerse, 15000); // Call the random function
+            } else {
+                 // console.log("Auto-advance off, interval not started.");
+            }
+        }
+
+        function resetInterval() {
+            // console.log("Resetting interval.");
+            startInterval(); // Simply restart based on current autoAdvance state
+        }
+
+        function setDarkMode(enabled) {
+            isDarkMode = enabled;
+            body.classList.toggle('dark', isDarkMode);
+            // Update styles for FAQ page elements if it's visible
+            if (faqPage.classList.contains('visible')) { // Check visibility class
+                updateFaqStyles();
+            }
+            localStorage.setItem('darkMode', isDarkMode);
+             // console.log("Dark Mode:", isDarkMode);
+        }
+
+        function toggleDarkMode() {
+            setDarkMode(!isDarkMode);
+        }
+
+        function setControlsVisibility(visible) {
+            // Don't show controls if FAQ page is visible
+            const show = visible && !faqPage.classList.contains('visible');
+            controlsVisible = show;
+            modeSwitchContainer.classList.toggle('visible', show);
+            menuButton.classList.toggle('visible', show);
+             // console.log("Controls Visible:", controlsVisible);
+        }
+
+
+        function openMenu() {
+            if (!isMenuOpen) {
+                isMenuOpen = true;
+                sideMenu.classList.add('active');
+                menuButton.classList.add('active'); // For 'X' icon animation
+                 // console.log("Menu Opened");
+            }
+        }
+
+        function closeMenu() {
+            if (isMenuOpen) {
+                isMenuOpen = false;
+                sideMenu.classList.remove('active');
+                menuButton.classList.remove('active');
+                 // console.log("Menu Closed");
+            }
+        }
+
+        function toggleMenu() {
+            if (isMenuOpen) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        }
+
+        // Function to handle clicks anywhere on the document
+        function handleDocumentClick(event) {
+            const target = event.target;
+
+             // Ignore clicks if FAQ page is visible, except for the back button and accordion elements
+             if (faqPage.classList.contains('visible')) {
+                 const isBackButton = backToMeditationLink.contains(target) || target === backToMeditationLink;
+                 let isAccordionElement = false;
+                 if (!isBackButton) {
+                     accordionTriggers.forEach(trigger => {
+                        if (trigger.contains(target) || (trigger.nextElementSibling && trigger.nextElementSibling.contains(target))) {
+                             isAccordionElement = true;
+                         }
+                     });
+                 }
+
+                 // Only return (do nothing) if the click is not the back button AND it's not an accordion element
+                 if (!isBackButton && !isAccordionElement) {
+                    return;
+                 }
+                 // Allow back button clicks and accordion clicks to proceed through their own listeners
+             }
+
+
+            // --- Initial Interaction: Show Controls ---
+            if (!initialInteractionDone && !faqPage.classList.contains('visible')) { // Only trigger if not on FAQ page
+                initialInteractionDone = true;
+                setControlsVisibility(true);
+                // Don't process other click logic on this first interaction
+                return;
+            }
+
+            // --- Click Logic When Controls ARE Visible ---
+            if (controlsVisible) {
+                // Check if click is ON the menu button
+                if (menuButton.contains(target)) {
+                    // Toggle menu handled by its own listener
+                    return;
+                }
+
+                // Check if click is ON the mode switch
+                if (modeSwitchContainer.contains(target)) {
+                    // Toggle mode handled by its own listener
+                    return;
+                }
+
+                // Check if click is INSIDE the open menu
+                if (isMenuOpen && sideMenu.contains(target)) {
+                    // Click is inside menu, do nothing regarding closing/hiding
+                    return;
+                }
+
+                // Check if click is ON the refresh button (allow this click)
+                // Check container as well in case of margin clicks
+                if (refreshButtonContainer && refreshButtonContainer.contains(target)) {
+                    return;
+                }
+
+                // --- Click is OUTSIDE Menu Button, Mode Switch, Open Menu, and Refresh Button ---
+
+                // 1. Close Menu if it's open
+                if (isMenuOpen) {
+                    closeMenu();
+                }
+
+                // 2. Hide Controls
+                setControlsVisibility(false);
+                initialInteractionDone = false; // Reset for next interaction cycle
+            }
+        }
+
+        function showFaqPage() {
+            faqPage.classList.add('visible');
+            body.classList.add('faq-mode'); // Add class to body
+            closeMenu();
+            setControlsVisibility(false);
+            updateFaqStyles();
+             // console.log("Navigated to FAQ");
+        }
+
+        function showHomePage() {
+            faqPage.classList.remove('visible');
+            body.classList.remove('faq-mode'); // Remove class from body
+            initialInteractionDone = false;
+            setControlsVisibility(false);
+             // console.log("Navigated to Home");
+        }
+
+
+        // Update FAQ styles based on dark mode
+        function updateFaqStyles() {
+            if (!faqPage) return;
+            faqPage.classList.toggle('dark', isDarkMode);
+            const header = faqPage.querySelector('.faq-header');
+            if (header) header.classList.toggle('dark', isDarkMode);
+            faqPage.querySelectorAll('.accordion-item').forEach(item => item.classList.toggle('dark', isDarkMode));
+            faqPage.querySelectorAll('.accordion-trigger').forEach(item => item.classList.toggle('dark', isDarkMode));
+            faqPage.querySelectorAll('.accordion-content').forEach(item => item.classList.toggle('dark', isDarkMode));
+            faqPage.querySelectorAll('.icon').forEach(item => item.classList.toggle('dark', isDarkMode));
+        }
+
+
+        // --- Event Listeners ---
+
+        // Refresh Button
+        if (refreshButton) {
+            refreshButton.addEventListener('click', showNewVerse);
+        } else {
+            console.error("Could not find Refresh button.");
+        }
+
+        // Dark Mode Switch
+        if (modeSwitch) {
+            modeSwitch.addEventListener('change', toggleDarkMode);
+        } else {
+            console.error("Could not find mode switch.");
+        }
+
+        // Menu Button
+        if (menuButton) {
+            menuButton.addEventListener('click', (event) => {
+                 event.stopPropagation(); // Prevent this click from triggering document listener immediately
+                 toggleMenu();
+            });
+        } else {
+            console.error("Could not find menu button.");
+        }
+
+        // Version Selection in Menu
+        versionSelectItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const newVersion = item.dataset.version;
+                if (newVersion !== selectedVersion) {
+                    selectedVersion = newVersion;
+                    versionSelectItems.forEach(v => v.classList.remove('active'));
+                    item.classList.add('active');
+                    currentVerseIndex = -1;
+                    showNewVerse();
+                    resetInterval();
+                     // console.log("Version selected:", selectedVersion);
+                }
+                closeMenu();
+            });
+        });
+
+        // Auto-Advance Toggle in Menu
+        if (pauseSwitch) {
+            pauseSwitch.addEventListener('change', () => {
+                autoAdvance = pauseSwitch.checked;
+                 // console.log("Auto Advance:", autoAdvance);
+                startInterval();
+            });
+        } else {
+            console.error("Could not find pause switch.");
+        }
+
+        // FAQ Link in Menu
+        if (faqLink) {
+            faqLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                showFaqPage();
+            });
+        }
+
+        // Back to Meditation Link on FAQ Page
+        if (backToMeditationLink) {
+            backToMeditationLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                showHomePage();
+            });
+        }
+
+        // Accordion Functionality on FAQ Page
+        accordionTriggers.forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const content = trigger.nextElementSibling;
+                const icon = trigger.querySelector('.icon');
+                 if (!content || !icon) return;
+                const currentlyOpen = content.classList.contains('show');
+                document.querySelectorAll('.accordion-content.show').forEach(c => c.classList.remove('show'));
+                document.querySelectorAll('.icon.rotate').forEach(i => i.classList.remove('rotate'));
+                if (!currentlyOpen) {
+                    content.classList.add('show');
+                    icon.classList.add('rotate');
+                }
+            });
+        });
+
+        // Global Click Listener
+        document.addEventListener('mousedown', handleDocumentClick);
+        document.addEventListener('touchstart', handleDocumentClick);
+
+
+        // --- Initial Load ---
+        window.onload = () => {
+            // 1. Set Dark Mode
+            const savedMode = localStorage.getItem('darkMode');
+            setDarkMode(savedMode === 'true');
+            if (modeSwitch) modeSwitch.checked = isDarkMode;
+
+            // 2. Set Initial Version Active Class
+            const initialVersionItem = document.querySelector(`#side-menu .version-select li[data-version="${selectedVersion}"]`);
+            if (initialVersionItem) initialVersionItem.classList.add('active');
+
+             // 3. Set Initial Auto-Advance State
+             if (pauseSwitch) pauseSwitch.checked = autoAdvance;
+
+            // 4. Display Initial Verse
+            showNewVerse();
+
+            // 5. Start Auto-Advance Interval
+            startInterval();
+
+            // 6. Set Initial Page View
+            if (window.location.hash === '#faq') {
+                 showFaqPage();
+            } else {
+                 showHomePage();
+            }
+
+             // console.log("Page loaded. Initial random verse displayed.");
+        };
+
+    </script>
+</body>
+</html>
