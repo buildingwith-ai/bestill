@@ -128,7 +128,6 @@
             align-items: center; /* Center children horizontally */
             justify-content: center; /* Center content vertically */
             position: relative; /* Changed from absolute for body flex centering */
-            /* Removed top, left, transform */
             transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
             z-index: 1;
             opacity: 1;
@@ -152,10 +151,9 @@
         }
 
         /* --- Verse Display --- */
-        /* Container for verse text and reference */
         #verse-content-container {
-            width: 100%; /* Take full width of card */
-            text-align: center; /* Center text within */
+            width: 100%;
+            text-align: center;
         }
 
         #verse-reference-container {
@@ -176,7 +174,7 @@
             font-size: 1.1rem;
             line-height: 1.7;
             text-align: center;
-             margin-bottom: 1rem; /* Add margin below text */
+             margin-bottom: 1rem;
         }
         @media (min-width: 640px) {
             #verse-text {
@@ -186,16 +184,15 @@
 
         /* --- Refresh Button Container --- */
         #refresh-button-container {
-            position: fixed; /* Position relative to viewport */
-            bottom: 2rem;    /* Distance from bottom */
-            left: 50%;       /* Center horizontally */
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
             transform: translateX(-50%);
-            z-index: 5;      /* Ensure it's above background but below menu/FAQ */
-            transition: opacity 0.3s ease, visibility 0.3s ease; /* Add transitions */
-            opacity: 1;      /* Visible by default when home */
+            z-index: 5;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            opacity: 1;
             visibility: visible;
         }
-        /* Hide button when FAQ is shown */
         body.faq-mode #refresh-button-container {
             opacity: 0;
             visibility: hidden;
@@ -380,6 +377,31 @@
             text-align: left;
             font-size: 0.95rem;
         }
+        /* Specific styling for toggle containers within menu */
+        #side-menu .pause-toggle, #side-menu .music-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: none; /* Remove outer shadow for container */
+            background: transparent; /* No background for container */
+            padding: 0.5rem 1rem; /* Adjust padding */
+            cursor: default; /* Not clickable itself */
+        }
+         #side-menu .pause-toggle p, #side-menu .music-toggle p {
+            font-weight: bold;
+             margin-right: 1rem;
+             color: var(--menu-header-color);
+        }
+
+        #side-menu .pause-toggle .switch, #side-menu .music-toggle .switch {
+            position: relative; /* Override fixed positioning */
+            top: auto;
+            right: auto;
+            opacity: 1; /* Always visible inside menu */
+            visibility: visible;
+            margin-left: auto; /* Push to the right */
+        }
+
 
         #side-menu ul li:hover, #side-menu .faq-link:hover {
              background: var(--menu-item-hover-bg);
@@ -416,30 +438,6 @@
             font-weight: bold;
         }
 
-        #side-menu .pause-toggle {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: none;
-            background: transparent;
-            padding: 0.5rem 1rem;
-            cursor: default;
-        }
-         #side-menu .pause-toggle p {
-            font-weight: bold;
-             margin-right: 1rem;
-             color: var(--menu-header-color);
-        }
-
-        #side-menu .pause-toggle .switch {
-            position: relative;
-            top: auto;
-            right: auto;
-            opacity: 1;
-            visibility: visible;
-            margin-left: auto;
-        }
-
         #side-menu .faq-link {
             margin-top: auto;
             text-align: center;
@@ -462,7 +460,7 @@
             z-index: 15;
             opacity: 0;
             transition: opacity 0.3s ease;
-            overflow-y: auto; /* Allow scrolling if content overflows */
+            overflow-y: auto;
         }
 
         .faq-page.visible {
@@ -573,7 +571,11 @@
 
     </style>
 </head>
-<body class="home-mode"> <button id="menu-button" class="neumorphic-button">
+<body class="home-mode">
+
+    <audio id="background-audio" src="ambient.mp3" loop></audio>
+
+    <button id="menu-button" class="neumorphic-button">
         <div class="menu-icon"></div>
     </button>
 
@@ -592,10 +594,15 @@
                     <li data-version="nlt">New Living (NLT)</li>
                 </ul>
             </li>
-            <li class="pause-toggle">
-                <p>Auto Advance</p>
+            <li class="pause-toggle"> <p>Auto Advance</p>
                 <label class="switch">
-                    <input type="checkbox" id="pause-switch" checked> <span class="slider round"></span>
+                    <input type="checkbox" id="pause-switch" checked>
+                    <span class="slider round"></span>
+                </label>
+            </li>
+            <li class="music-toggle"> <p>Background Music</p>
+                <label class="switch">
+                    <input type="checkbox" id="music-switch"> <span class="slider round"></span>
                 </label>
             </li>
         </ul>
@@ -613,23 +620,23 @@
                 </p>
             </div>
         </div>
-        </div>
+    </div>
 
     <div id="refresh-button-container">
         <button id="refresh-button" class="neumorphic-button" aria-label="New Verse">
-            &rarr; </button>
+            &rarr;
+        </button>
     </div>
 
-    <div id="faq-page" class="faq-page"> <div class="faq-content">
+    <div id="faq-page" class="faq-page">
+        <div class="faq-content">
             <a href="#" class="back-button" id="back-to-meditation">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2">
                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                 </svg>
                 Back to Meditation
             </a>
-
             <h1 class="faq-header">Frequently Asked Questions</h1>
-
             <div class="accordion-item">
                 <div class="accordion-trigger">
                     How are verses selected?
@@ -668,6 +675,17 @@
                      When auto-advance is enabled (using the toggle in the menu), the app will automatically display a new random verse after about 15 seconds. This allows for hands-free meditation. You can disable it if you prefer to get new verses manually using the refresh button.
                  </div>
              </div>
+              <div class="accordion-item">
+                 <div class="accordion-trigger">
+                    Can I listen to music?
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
+                         <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                     </svg>
+                 </div>
+                 <div class="accordion-content">
+                    Yes! Ambient background music ("ambient.mp3") is set to play automatically. You can toggle it on or off using the "Background Music" switch in the menu. Your preference will be saved for your next visit.
+                 </div>
+             </div>
              <div class="accordion-item">
                  <div class="accordion-trigger">
                      Where is the verse reference?
@@ -690,7 +708,7 @@
                     To maintain a clean and focused reading experience, the menu button and dark mode switch appear only when you first interact with the screen (click or tap). If you then click or tap away from these buttons or the open menu, they will hide again until your next interaction.
                  </div>
              </div>
-             </div>
+        </div>
     </div>
 
     <script>
@@ -709,20 +727,21 @@
         ];
 
         // --- State ---
-        let currentVerseIndex = -1; // Start at -1 to ensure the first random pick is always new
+        let currentVerseIndex = -1;
         let verseInterval = null;
         let isDarkMode = false;
         let isMenuOpen = false;
-        let selectedVersion = 'esv'; // Default version
-        let autoAdvance = true; // Default to true
-        let controlsVisible = false; // State for menu/switch visibility
-        let initialInteractionDone = false; // Track if the first click happened
+        let selectedVersion = 'esv';
+        let autoAdvance = true;
+        let controlsVisible = false;
+        let initialInteractionDone = false;
+        let playMusicPreference = true; // Default to playing music
 
         // --- DOM Elements ---
         const verseTextElement = document.getElementById('verse-text');
         const verseReferenceElement = document.getElementById('verse-reference');
         const refreshButton = document.getElementById('refresh-button');
-        const refreshButtonContainer = document.getElementById('refresh-button-container'); // Added container ref
+        const refreshButtonContainer = document.getElementById('refresh-button-container');
         const modeSwitch = document.getElementById('mode-switch');
         const body = document.body;
         const modeSwitchContainer = document.getElementById('mode-switch-container');
@@ -736,136 +755,139 @@
         const accordionTriggers = document.querySelectorAll('.accordion-trigger');
         const mainCard = document.getElementById('main-card');
         const verseContentContainer = document.getElementById('verse-content-container');
+        const backgroundAudio = document.getElementById('background-audio'); // Audio element
+        const musicSwitch = document.getElementById('music-switch'); // Music toggle switch
 
         // --- Functions ---
 
-        // Filter scriptures based on selected version
         function getFilteredScriptures() {
             return scriptures.filter(verse => verse.version === selectedVersion);
         }
 
-        // Display a specific verse by its index in the filtered list
         function displayVerseByIndex(index) {
              const filteredScriptures = getFilteredScriptures();
              if (!filteredScriptures || filteredScriptures.length === 0) {
                  verseTextElement.textContent = `No scriptures available for ${selectedVersion.toUpperCase()}.`;
                  verseReferenceElement.textContent = "";
-                 currentVerseIndex = -1; // Reset index
+                 currentVerseIndex = -1;
                  return;
              }
               if (index < 0 || index >= filteredScriptures.length) {
                   console.error("Invalid index for displayVerseByIndex:", index);
-                  return; // Avoid errors with invalid index
+                  return;
               }
-
-             currentVerseIndex = index; // Update global index to the displayed verse's index
+             currentVerseIndex = index;
              const verse = filteredScriptures[index];
              verseTextElement.textContent = verse.text;
-             verseReferenceElement.textContent = `${verse.reference} (${verse.version.toUpperCase()})`; // Show version
+             verseReferenceElement.textContent = `${verse.reference} (${verse.version.toUpperCase()})`;
         }
 
-
-        // Show a new random verse (different from the current one)
         function showRandomVerse() {
             const filteredScriptures = getFilteredScriptures();
             if (!filteredScriptures || filteredScriptures.length === 0) {
-                displayVerseByIndex(-1); // Show empty state
+                displayVerseByIndex(-1);
                 return;
             }
             if (filteredScriptures.length === 1) {
-                displayVerseByIndex(0); // Only one verse, just display it
+                displayVerseByIndex(0);
                 return;
             }
-
             let randomIndex;
-            // Keep picking a random index until it's different from the current one
             do {
                 randomIndex = Math.floor(Math.random() * filteredScriptures.length);
             } while (randomIndex === currentVerseIndex);
-
-            displayVerseByIndex(randomIndex); // Display the new random verse
-
+            displayVerseByIndex(randomIndex);
             if (autoAdvance) {
                 resetInterval();
             }
-            // console.log("Random verse shown. Filtered Index:", currentVerseIndex);
         }
-
-        // Renamed showNextVerse to make its purpose clear (it's now random)
         const showNewVerse = showRandomVerse;
 
-
         function startInterval() {
-            clearInterval(verseInterval); // Clear any existing interval
+            clearInterval(verseInterval);
             if (autoAdvance) {
-                 // console.log("Starting interval (15s) for random verse");
-                 verseInterval = setInterval(showNewVerse, 15000); // Call the random function
-            } else {
-                 // console.log("Auto-advance off, interval not started.");
+                 verseInterval = setInterval(showNewVerse, 15000);
             }
         }
-
         function resetInterval() {
-            // console.log("Resetting interval.");
-            startInterval(); // Simply restart based on current autoAdvance state
+            startInterval();
         }
 
         function setDarkMode(enabled) {
             isDarkMode = enabled;
             body.classList.toggle('dark', isDarkMode);
-            // Update styles for FAQ page elements if it's visible
-            if (faqPage.classList.contains('visible')) { // Check visibility class
+            if (faqPage.classList.contains('visible')) {
                 updateFaqStyles();
             }
             localStorage.setItem('darkMode', isDarkMode);
-             // console.log("Dark Mode:", isDarkMode);
         }
-
         function toggleDarkMode() {
             setDarkMode(!isDarkMode);
         }
 
         function setControlsVisibility(visible) {
-            // Don't show controls if FAQ page is visible
             const show = visible && !faqPage.classList.contains('visible');
             controlsVisible = show;
             modeSwitchContainer.classList.toggle('visible', show);
             menuButton.classList.toggle('visible', show);
-             // console.log("Controls Visible:", controlsVisible);
         }
-
 
         function openMenu() {
             if (!isMenuOpen) {
                 isMenuOpen = true;
                 sideMenu.classList.add('active');
-                menuButton.classList.add('active'); // For 'X' icon animation
-                 // console.log("Menu Opened");
+                menuButton.classList.add('active');
             }
         }
-
         function closeMenu() {
             if (isMenuOpen) {
                 isMenuOpen = false;
                 sideMenu.classList.remove('active');
                 menuButton.classList.remove('active');
-                 // console.log("Menu Closed");
             }
         }
-
         function toggleMenu() {
-            if (isMenuOpen) {
-                closeMenu();
-            } else {
-                openMenu();
+            if (isMenuOpen) closeMenu(); else openMenu();
+        }
+
+        // --- Music Functions ---
+        function playAudio() {
+            if (backgroundAudio) {
+                backgroundAudio.play().catch(error => {
+                    // Autoplay was prevented.
+                    console.warn("Audio autoplay prevented:", error);
+                    // User will need to interact to start music or enable it via toggle.
+                    // We can set playMusicPreference to false here if autoplay fails,
+                    // so the toggle reflects the actual state.
+                    if (playMusicPreference) { // Only update if it was supposed to play
+                        playMusicPreference = false;
+                        musicSwitch.checked = false;
+                        localStorage.setItem('playMusic', playMusicPreference);
+                    }
+                });
             }
         }
 
-        // Function to handle clicks anywhere on the document
+        function pauseAudio() {
+            if (backgroundAudio) {
+                backgroundAudio.pause();
+            }
+        }
+
+        function toggleMusic() {
+            playMusicPreference = musicSwitch.checked;
+            if (playMusicPreference) {
+                playAudio();
+            } else {
+                pauseAudio();
+            }
+            localStorage.setItem('playMusic', playMusicPreference);
+            // console.log("Music preference saved:", playMusicPreference);
+        }
+
+
         function handleDocumentClick(event) {
             const target = event.target;
-
-             // Ignore clicks if FAQ page is visible, except for the back button and accordion elements
              if (faqPage.classList.contains('visible')) {
                  const isBackButton = backToMeditationLink.contains(target) || target === backToMeditationLink;
                  let isAccordionElement = false;
@@ -876,81 +898,46 @@
                          }
                      });
                  }
-
-                 // Only return (do nothing) if the click is not the back button AND it's not an accordion element
-                 if (!isBackButton && !isAccordionElement) {
-                    return;
-                 }
-                 // Allow back button clicks and accordion clicks to proceed through their own listeners
+                 if (!isBackButton && !isAccordionElement) return;
              }
 
-
-            // --- Initial Interaction: Show Controls ---
-            if (!initialInteractionDone && !faqPage.classList.contains('visible')) { // Only trigger if not on FAQ page
+            if (!initialInteractionDone && !faqPage.classList.contains('visible')) {
                 initialInteractionDone = true;
                 setControlsVisibility(true);
-                // Don't process other click logic on this first interaction
+                 // Attempt to play music on first *meaningful* interaction if preference is on
+                if (playMusicPreference && backgroundAudio && backgroundAudio.paused) {
+                    playAudio();
+                }
                 return;
             }
 
-            // --- Click Logic When Controls ARE Visible ---
             if (controlsVisible) {
-                // Check if click is ON the menu button
-                if (menuButton.contains(target)) {
-                    // Toggle menu handled by its own listener
+                if (menuButton.contains(target) ||
+                    modeSwitchContainer.contains(target) ||
+                    (isMenuOpen && sideMenu.contains(target)) ||
+                    (refreshButtonContainer && refreshButtonContainer.contains(target))) {
                     return;
                 }
-
-                // Check if click is ON the mode switch
-                if (modeSwitchContainer.contains(target)) {
-                    // Toggle mode handled by its own listener
-                    return;
-                }
-
-                // Check if click is INSIDE the open menu
-                if (isMenuOpen && sideMenu.contains(target)) {
-                    // Click is inside menu, do nothing regarding closing/hiding
-                    return;
-                }
-
-                // Check if click is ON the refresh button (allow this click)
-                // Check container as well in case of margin clicks
-                if (refreshButtonContainer && refreshButtonContainer.contains(target)) {
-                    return;
-                }
-
-                // --- Click is OUTSIDE Menu Button, Mode Switch, Open Menu, and Refresh Button ---
-
-                // 1. Close Menu if it's open
-                if (isMenuOpen) {
-                    closeMenu();
-                }
-
-                // 2. Hide Controls
+                if (isMenuOpen) closeMenu();
                 setControlsVisibility(false);
-                initialInteractionDone = false; // Reset for next interaction cycle
+                initialInteractionDone = false;
             }
         }
 
         function showFaqPage() {
             faqPage.classList.add('visible');
-            body.classList.add('faq-mode'); // Add class to body
+            body.classList.add('faq-mode');
             closeMenu();
             setControlsVisibility(false);
             updateFaqStyles();
-             // console.log("Navigated to FAQ");
         }
-
         function showHomePage() {
             faqPage.classList.remove('visible');
-            body.classList.remove('faq-mode'); // Remove class from body
+            body.classList.remove('faq-mode');
             initialInteractionDone = false;
             setControlsVisibility(false);
-             // console.log("Navigated to Home");
         }
 
-
-        // Update FAQ styles based on dark mode
         function updateFaqStyles() {
             if (!faqPage) return;
             faqPage.classList.toggle('dark', isDarkMode);
@@ -962,34 +949,14 @@
             faqPage.querySelectorAll('.icon').forEach(item => item.classList.toggle('dark', isDarkMode));
         }
 
-
         // --- Event Listeners ---
+        if (refreshButton) refreshButton.addEventListener('click', showNewVerse);
+        if (modeSwitch) modeSwitch.addEventListener('change', toggleDarkMode);
+        if (menuButton) menuButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleMenu();
+        });
 
-        // Refresh Button
-        if (refreshButton) {
-            refreshButton.addEventListener('click', showNewVerse);
-        } else {
-            console.error("Could not find Refresh button.");
-        }
-
-        // Dark Mode Switch
-        if (modeSwitch) {
-            modeSwitch.addEventListener('change', toggleDarkMode);
-        } else {
-            console.error("Could not find mode switch.");
-        }
-
-        // Menu Button
-        if (menuButton) {
-            menuButton.addEventListener('click', (event) => {
-                 event.stopPropagation(); // Prevent this click from triggering document listener immediately
-                 toggleMenu();
-            });
-        } else {
-            console.error("Could not find menu button.");
-        }
-
-        // Version Selection in Menu
         versionSelectItems.forEach(item => {
             item.addEventListener('click', () => {
                 const newVersion = item.dataset.version;
@@ -1000,40 +967,27 @@
                     currentVerseIndex = -1;
                     showNewVerse();
                     resetInterval();
-                     // console.log("Version selected:", selectedVersion);
                 }
                 closeMenu();
             });
         });
 
-        // Auto-Advance Toggle in Menu
-        if (pauseSwitch) {
-            pauseSwitch.addEventListener('change', () => {
-                autoAdvance = pauseSwitch.checked;
-                 // console.log("Auto Advance:", autoAdvance);
-                startInterval();
-            });
-        } else {
-            console.error("Could not find pause switch.");
-        }
+        if (pauseSwitch) pauseSwitch.addEventListener('change', () => {
+            autoAdvance = pauseSwitch.checked;
+            startInterval();
+        });
 
-        // FAQ Link in Menu
-        if (faqLink) {
-            faqLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                showFaqPage();
-            });
-        }
+        if (musicSwitch) musicSwitch.addEventListener('change', toggleMusic); // Listener for music toggle
 
-        // Back to Meditation Link on FAQ Page
-        if (backToMeditationLink) {
-            backToMeditationLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                showHomePage();
-            });
-        }
+        if (faqLink) faqLink.addEventListener('click', (event) => {
+            event.preventDefault();
+            showFaqPage();
+        });
+        if (backToMeditationLink) backToMeditationLink.addEventListener('click', (event) => {
+            event.preventDefault();
+            showHomePage();
+        });
 
-        // Accordion Functionality on FAQ Page
         accordionTriggers.forEach(trigger => {
             trigger.addEventListener('click', () => {
                 const content = trigger.nextElementSibling;
@@ -1049,41 +1003,59 @@
             });
         });
 
-        // Global Click Listener
         document.addEventListener('mousedown', handleDocumentClick);
         document.addEventListener('touchstart', handleDocumentClick);
 
-
         // --- Initial Load ---
         window.onload = () => {
-            // 1. Set Dark Mode
+            // 1. Dark Mode
             const savedMode = localStorage.getItem('darkMode');
             setDarkMode(savedMode === 'true');
             if (modeSwitch) modeSwitch.checked = isDarkMode;
 
-            // 2. Set Initial Version Active Class
+            // 2. Version
             const initialVersionItem = document.querySelector(`#side-menu .version-select li[data-version="${selectedVersion}"]`);
             if (initialVersionItem) initialVersionItem.classList.add('active');
 
-             // 3. Set Initial Auto-Advance State
-             if (pauseSwitch) pauseSwitch.checked = autoAdvance;
+            // 3. Auto-Advance
+            const savedAutoAdvance = localStorage.getItem('autoAdvance');
+            if (savedAutoAdvance !== null) {
+                autoAdvance = savedAutoAdvance === 'true';
+            }
+            if (pauseSwitch) pauseSwitch.checked = autoAdvance;
 
-            // 4. Display Initial Verse
+
+            // 4. Music Preference
+            const savedMusicPreference = localStorage.getItem('playMusic');
+            if (savedMusicPreference !== null) {
+                playMusicPreference = savedMusicPreference === 'true';
+            }
+            if (musicSwitch) musicSwitch.checked = playMusicPreference;
+
+            // Attempt to play music if preference is on AND it's the first load (no prior user interaction needed for this first attempt)
+            // Browser might still block it. The `playAudio` function handles this.
+            if (playMusicPreference && backgroundAudio) {
+                 // Delay slightly to ensure DOM is fully ready and to potentially improve autoplay chances
+                setTimeout(() => {
+                    playAudio();
+                }, 100);
+            }
+
+
+            // 5. Display Verse
             showNewVerse();
 
-            // 5. Start Auto-Advance Interval
+            // 6. Start Interval
             startInterval();
 
-            // 6. Set Initial Page View
+            // 7. Page View
             if (window.location.hash === '#faq') {
                  showFaqPage();
             } else {
                  showHomePage();
             }
-
-             // console.log("Page loaded. Initial random verse displayed.");
+            // console.log("Page loaded.");
         };
-
     </script>
 </body>
 </html>
