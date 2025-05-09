@@ -9,56 +9,54 @@
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Base light mode variables */
+        /* Updated Light Mode Blue Theme */
         :root {
-            --bg-color: #e0e0e0;
-            --text-color: #555;
-            --highlight-color: #ffffff;
-            --shadow-color: #bebebe;
-            --card-bg-color: #e0e0e0;
-            --menu-bg-color: #e0e0e0; /* Menu background */
-            --menu-item-hover-bg: #d0d0d0;
-            --menu-border-color: #c0c0c0;
-            --menu-header-color: #444;
-            --switch-bg-inactive: #ccc;
-            --switch-bg-active: #2b8cc4;
-            --switch-handle-bg: white;
-            --faq-bg-color: #fff;
-            --faq-border-color: #ccc;
-            --faq-hover-bg: #f0f0f0;
-            --faq-text-color: #555;
-            --faq-header-color: #333;
-            --back-button-color: #3b82f6;
-            --back-button-hover-color: #2563eb;
-            --icon-color: #333;
-            --gradient-start: #e0e0e0;
-            --gradient-end: #f8f8f8;
+            --bg-color: #e6eaf0; /* Soft, very light desaturated blue */
+            --text-color: #3a4a5a; /* Dark desaturated blue/gray */
+            --highlight-color: #fafdff; /* Very light, almost white blue for highlights */
+            --shadow-color: #cad0d9; /* Slightly darker, subtly more saturated shade of background blue */
+            --card-bg-color: #e6eaf0; /* Same as body background */
+            --menu-bg-color: #e6eaf0; /* Same for menu */
+            --menu-item-hover-bg: #d8dde4; /* Slightly darker version of bg for hover */
+            --menu-header-color: #3a4a5a; /* Consistent with main text */
+            --switch-bg-inactive: #cad0d9; /* Muted, matches shadow color */
+            --switch-bg-active: #7aa0c7; /* Soft sky blue accent */
+            --switch-handle-bg: #ffffff; /* White handle */
+            --faq-bg-color: #eff2f5; /* Slightly off-white/blue for FAQ card, distinct from main bg */
+            --faq-border-color: #d8dde4; /* Softer border for FAQ items */
+            --faq-hover-bg: #e6eaf0; /* Subtle hover for FAQ items, matches main bg */
+            --faq-text-color: #3a4a5a; /* Consistent text color */
+            --faq-header-color: #3a4a5a; /* Consistent header text color */
+            --back-button-color: #7aa0c7; /* Soft sky blue accent for back button text */
+            --back-button-hover-color: #6b90b5; /* Darker version of accent for hover */
+            --icon-color: #3a4a5a; /* Consistent icon color */
+            --gradient-start: #e6eaf0; /* Start gradient with bg color */
+            --gradient-end: #d8dde4; /* Slightly darker, end for gradient */
         }
 
-        /* Dark mode variables */
+        /* Updated Dark Mode Blue Theme */
         body.dark {
-            --bg-color: #1a202c;
-            --text-color: #f7fafc;
-            --highlight-color: #2d3748;
-            --shadow-color: #0d1117;
-            --card-bg-color: #1a202c;
-            --menu-bg-color: #2d3748; /* Dark menu background */
-            --menu-item-hover-bg: #4a5568;
-            --menu-border-color: #4a5568;
-            --menu-header-color: #f7fafc;
-            --switch-bg-inactive: #4a5568;
-            --switch-bg-active: #2b8cc4; /* Keep active color consistent? */
-            --switch-handle-bg: #1a202c;
-            --faq-bg-color: #2d3748;
-            --faq-border-color: #4a5568;
-            --faq-hover-bg: #4a5568;
-            --faq-text-color: #cbd5e0;
-            --faq-header-color: #f7fafc;
-            --back-button-color: #60a5fa; /* Lighter blue for dark */
-            --back-button-hover-color: #93c5fd;
-            --icon-color: #f7fafc;
-            --gradient-start: #1a202c;
-            --gradient-end: #2d3748;
+            --bg-color: #1c232b; /* Deep, dark, desaturated blue */
+            --text-color: #c8d4e0; /* Light, soft blue */
+            --highlight-color: #2b3441; /* Subtly lighter shade of dark background */
+            --shadow-color: #10141a; /* Subtly darker shade, approaching black with blue hue */
+            --card-bg-color: #1c232b; /* Same as body background */
+            --menu-bg-color: #1c232b; /* Same for menu */
+            --menu-item-hover-bg: #252d37; /* Slightly lighter version of bg for hover */
+            --menu-header-color: #c8d4e0; /* Consistent with main text */
+            --switch-bg-inactive: #2b3441; /* Muted, matches highlight color */
+            --switch-bg-active: #6c8aa6; /* Muted, lighter blue accent */
+            --switch-handle-bg: #1c232b; /* Dark handle, matches bg */
+            --faq-bg-color: #202831; /* Slightly lighter than main bg for FAQ card */
+            --faq-border-color: #2b3441; /* Softer border for FAQ items */
+            --faq-hover-bg: #252d37; /* Subtle hover for FAQ items */
+            --faq-text-color: #c8d4e0; /* Consistent text color */
+            --faq-header-color: #c8d4e0; /* Consistent header text color */
+            --back-button-color: #6c8aa6; /* Muted, lighter blue accent for back button */
+            --back-button-hover-color: #7c9abb; /* Lighter version of accent for hover */
+            --icon-color: #c8d4e0; /* Consistent icon color */
+            --gradient-start: #1c232b; /* Start gradient with bg color */
+            --gradient-end: #10141a; /* Slightly darker, end for gradient */
         }
 
         /* Apply variables */
@@ -71,13 +69,13 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center; /* Keep body centering the card */
-            padding: 1rem; /* Base padding */
-            padding-bottom: 6rem; /* Add padding at the bottom to avoid overlap with fixed button */
+            justify-content: center;
+            padding: 1rem;
+            padding-bottom: 6rem;
             background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
             background-size: 100% 100%;
             animation: gradientShift 10s ease infinite;
-            overflow-x: hidden; /* Prevent horizontal scrollbar */
+            overflow-x: hidden;
         }
 
         @keyframes gradientShift {
@@ -98,8 +96,8 @@
             background: var(--bg-color);
             border: none;
             cursor: pointer;
-            font-size: 1.5rem; /* Size for character icon */
-            line-height: 1; /* Ensure icon is centered vertically */
+            font-size: 1.5rem;
+            line-height: 1;
             color: var(--text-color);
             transition: all 0.2s ease-in-out;
             box-shadow: 5px 5px 10px var(--shadow-color),
@@ -122,18 +120,17 @@
                         -8px -8px 16px var(--highlight-color);
             width: 90%;
             max-width: 500px;
-            min-height: 250px; /* Ensure minimum height */
+            min-height: 250px;
             display: flex;
-            flex-direction: column; /* Stack children vertically */
-            align-items: center; /* Center children horizontally */
-            justify-content: center; /* Center content vertically */
-            position: relative; /* Changed from absolute for body flex centering */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
             transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
             z-index: 1;
             opacity: 1;
             visibility: visible;
         }
-        /* Hide card when FAQ is shown */
         body.faq-mode .neumorphic-card {
             opacity: 0;
             visibility: hidden;
@@ -146,7 +143,7 @@
             }
             body {
                 padding: 2rem;
-                 padding-bottom: 7rem; /* More bottom padding on larger screens */
+                 padding-bottom: 7rem;
             }
         }
 
@@ -377,15 +374,14 @@
             text-align: left;
             font-size: 0.95rem;
         }
-        /* Specific styling for toggle containers within menu */
         #side-menu .pause-toggle, #side-menu .music-toggle {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: none; /* Remove outer shadow for container */
-            background: transparent; /* No background for container */
-            padding: 0.5rem 1rem; /* Adjust padding */
-            cursor: default; /* Not clickable itself */
+            box-shadow: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            cursor: default;
         }
          #side-menu .pause-toggle p, #side-menu .music-toggle p {
             font-weight: bold;
@@ -394,12 +390,12 @@
         }
 
         #side-menu .pause-toggle .switch, #side-menu .music-toggle .switch {
-            position: relative; /* Override fixed positioning */
+            position: relative;
             top: auto;
             right: auto;
-            opacity: 1; /* Always visible inside menu */
+            opacity: 1;
             visibility: visible;
-            margin-left: auto; /* Push to the right */
+            margin-left: auto;
         }
 
 
@@ -854,12 +850,8 @@
         function playAudio() {
             if (backgroundAudio) {
                 backgroundAudio.play().catch(error => {
-                    // Autoplay was prevented.
                     console.warn("Audio autoplay prevented:", error);
-                    // User will need to interact to start music or enable it via toggle.
-                    // We can set playMusicPreference to false here if autoplay fails,
-                    // so the toggle reflects the actual state.
-                    if (playMusicPreference) { // Only update if it was supposed to play
+                    if (playMusicPreference) {
                         playMusicPreference = false;
                         musicSwitch.checked = false;
                         localStorage.setItem('playMusic', playMusicPreference);
@@ -882,7 +874,6 @@
                 pauseAudio();
             }
             localStorage.setItem('playMusic', playMusicPreference);
-            // console.log("Music preference saved:", playMusicPreference);
         }
 
 
@@ -904,7 +895,6 @@
             if (!initialInteractionDone && !faqPage.classList.contains('visible')) {
                 initialInteractionDone = true;
                 setControlsVisibility(true);
-                 // Attempt to play music on first *meaningful* interaction if preference is on
                 if (playMusicPreference && backgroundAudio && backgroundAudio.paused) {
                     playAudio();
                 }
@@ -974,10 +964,11 @@
 
         if (pauseSwitch) pauseSwitch.addEventListener('change', () => {
             autoAdvance = pauseSwitch.checked;
+            localStorage.setItem('autoAdvance', autoAdvance); // Save auto-advance preference
             startInterval();
         });
 
-        if (musicSwitch) musicSwitch.addEventListener('change', toggleMusic); // Listener for music toggle
+        if (musicSwitch) musicSwitch.addEventListener('change', toggleMusic);
 
         if (faqLink) faqLink.addEventListener('click', (event) => {
             event.preventDefault();
@@ -1008,53 +999,39 @@
 
         // --- Initial Load ---
         window.onload = () => {
-            // 1. Dark Mode
             const savedMode = localStorage.getItem('darkMode');
             setDarkMode(savedMode === 'true');
             if (modeSwitch) modeSwitch.checked = isDarkMode;
 
-            // 2. Version
             const initialVersionItem = document.querySelector(`#side-menu .version-select li[data-version="${selectedVersion}"]`);
             if (initialVersionItem) initialVersionItem.classList.add('active');
 
-            // 3. Auto-Advance
             const savedAutoAdvance = localStorage.getItem('autoAdvance');
             if (savedAutoAdvance !== null) {
                 autoAdvance = savedAutoAdvance === 'true';
             }
             if (pauseSwitch) pauseSwitch.checked = autoAdvance;
 
-
-            // 4. Music Preference
             const savedMusicPreference = localStorage.getItem('playMusic');
             if (savedMusicPreference !== null) {
                 playMusicPreference = savedMusicPreference === 'true';
             }
             if (musicSwitch) musicSwitch.checked = playMusicPreference;
 
-            // Attempt to play music if preference is on AND it's the first load (no prior user interaction needed for this first attempt)
-            // Browser might still block it. The `playAudio` function handles this.
             if (playMusicPreference && backgroundAudio) {
-                 // Delay slightly to ensure DOM is fully ready and to potentially improve autoplay chances
                 setTimeout(() => {
                     playAudio();
                 }, 100);
             }
 
-
-            // 5. Display Verse
             showNewVerse();
-
-            // 6. Start Interval
             startInterval();
 
-            // 7. Page View
             if (window.location.hash === '#faq') {
                  showFaqPage();
             } else {
                  showHomePage();
             }
-            // console.log("Page loaded.");
         };
     </script>
 </body>
