@@ -733,15 +733,41 @@
         function parseCSV(csv) {
             const lines = csv.split('\n');
             const headers = lines[0].split(',');
-            return lines.slice(1)
-                .filter(line => line.trim())
-                .map(line => {
-                    const values = line.split(',');
-                    return {
-                        reference: values[0].replace(/^"|"$/g, ''),
-                        verse: values[1].replace(/^"|"$/g, '')
+            const verses = [];
+            
+            let currentVerse = null;
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                
+                // Check if this is a new verse entry (starts with a reference)
+                if (line.match(/^"?[A-Za-z0-9\s]+"?,/)) {
+                    // If we have a previous verse, add it
+                    if (currentVerse) {
+                        verses.push(currentVerse);
+                    }
+                    
+                    const [reference, ...rest] = line.split(',');
+                    currentVerse = {
+                        reference: reference.replace(/^"|"$/g, ''),
+                        verse: rest.join(',').replace(/^"|"$/g, '')
                     };
-                });
+                } else {
+                    // This is a continuation of the previous verse
+                    if (currentVerse) {
+                        currentVerse.verse += ' ' + line.replace(/^"|"$/g, '');
+                    }
+                }
+            }
+            
+            // Add the last verse
+            if (currentVerse) {
+                verses.push(currentVerse);
+            }
+            
+            return verses;
         }
 
         async function loadVerses() {
