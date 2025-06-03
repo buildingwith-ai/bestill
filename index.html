@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- Head section remains exactly the same until the script tag -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,8 +14,20 @@
     </style>
 </head>
 <body class="home-mode">
+    <!-- Add the missing DOM elements -->
+    <div id="verse-text"></div>
+    <div id="verse-reference"></div>
     <!-- All existing HTML elements remain exactly the same -->
     <script>
+        // Add the missing page display functions
+        function showHomePage() {
+            document.body.className = 'home-mode';
+        }
+
+        function showFaqPage() {
+            document.body.className = 'faq-mode';
+        }
+
         // --- Data Management ---
         let versesESV = [];
         let versesNLT = [];
@@ -82,7 +93,9 @@
                 showNewVerse();
             } catch (error) {
                 console.error('Error loading verses:', error);
-                verseTextElement.textContent = 'Error loading verses. Please try again later.';
+                if (verseTextElement) {
+                    verseTextElement.textContent = 'Error loading verses. Please try again later.';
+                }
             }
         }
 
@@ -107,16 +120,16 @@
         function showNewVerse() {
             const verses = getAvailableVerses();
             if (!verses || verses.length === 0) {
-                verseTextElement.textContent = 'No verses available.';
-                verseReferenceElement.textContent = '';
+                if (verseTextElement) verseTextElement.textContent = 'No verses available.';
+                if (verseReferenceElement) verseReferenceElement.textContent = '';
                 return;
             }
 
             const index = getRandomUnusedIndex(verses.length);
             const verse = verses[index];
             
-            verseTextElement.textContent = verse.Verse;
-            verseReferenceElement.textContent = `${verse.Reference} (${selectedVersion.toUpperCase()})`;
+            if (verseTextElement) verseTextElement.textContent = verse.Verse;
+            if (verseReferenceElement) verseReferenceElement.textContent = `${verse.Reference} (${selectedVersion.toUpperCase()})`;
             
             if (autoAdvance) {
                 resetInterval();
