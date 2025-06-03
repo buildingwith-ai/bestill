@@ -48,6 +48,16 @@
         const backgroundAudio = document.getElementById('background-audio');
         const versionSelectItems = document.querySelectorAll('#side-menu .version-select ul li');
 
+        // Function to handle verse interval reset
+        function resetInterval() {
+            if (verseInterval) {
+                clearInterval(verseInterval);
+            }
+            if (autoAdvance) {
+                verseInterval = setInterval(showNewVerse, 15000); // 15 seconds
+            }
+        }
+
         // Function to handle dark mode toggle
         function setDarkMode(enabled) {
             isDarkMode = enabled;
