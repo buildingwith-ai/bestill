@@ -732,39 +732,29 @@
         // --- Functions ---
         function parseCSV(csv) {
             const lines = csv.split('\n');
-            const headers = lines[0].split(',');
             const verses = [];
-            
-            let currentVerse = null;
             
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
                 
+                // Split on the last comma (which separates verse from topics)
+                const lastCommaIndex = line.lastIndexOf(',');
+                if (lastCommaIndex === -1) continue;
                 
-                // Check if this is a new verse entry (starts with a reference)
-                if (line.match(/^"?[A-Za-z0-9\s]+"?,/)) {
-                    // If we have a previous verse, add it
-                    if (currentVerse) {
-                        verses.push(currentVerse);
-                    }
-                    
-                    const [reference, ...rest] = line.split(',');
-                    currentVerse = {
-                        reference: reference.replace(/^"|"$/g, ''),
-                        verse: rest.join(',').replace(/^"|"$/g, '')
-                    };
-                } else {
-                    // This is a continuation of the previous verse
-                    if (currentVerse) {
-                        currentVerse.verse += ' ' + line.replace(/^"|"$/g, '');
-                    }
-                }
-            }
-            
-            // Add the last verse
-            if (currentVerse) {
-                verses.push(currentVerse);
+                const beforeTopics = line.substring(0, lastCommaIndex);
+                
+                // Find the first comma to separate reference from verse
+                const firstCommaIndex = beforeTopics.indexOf(',');
+                if (firstCommaIndex === -1) continue;
+                
+                const reference = beforeTopics.substring(0, firstCommaIndex).replace(/^"|"$/g, '');
+                const verse = beforeTopics.substring(firstCommaIndex + 1).replace(/^"|"$/g, '');
+                
+                verses.push({
+                    reference: reference,
+                    verse: verse
+                });
             }
             
             return verses;
