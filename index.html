@@ -37,6 +37,17 @@
         const backgroundAudio = document.getElementById('background-audio');
         const versionSelectItems = document.querySelectorAll('#side-menu .version-select ul li');
 
+        // Function to handle dark mode toggle
+        function setDarkMode(enabled) {
+            isDarkMode = enabled;
+            if (enabled) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            localStorage.setItem('darkMode', enabled);
+        }
+
         // Function to parse CSV content
         function parseCSV(csv) {
             const lines = csv.split('\n');
