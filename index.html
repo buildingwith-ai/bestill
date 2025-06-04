@@ -717,20 +717,28 @@
         // Function to parse CSV content
         function parseCSV(csv) {
             const lines = csv.split('\n');
-            const headers = lines[0].split(',');
             const verses = [];
             
-            for (let i = 1; i  < lines.length; i++) {
+            for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 
-                const values = lines[i].split(',');
-                const reference = values[0];
-                const text = values[1];
+                // Find the last occurrence of '","' to split between verse text and topics
+                const lastQuoteCommaQuote = lines[i].lastIndexOf('","');
+                if (lastQuoteCommaQuote === -1) continue;
                 
-                if (reference && text) {
+                // Extract reference (remove quotes)
+                const reference = lines[i].substring(0, lines[i].indexOf(',')).replace(/^"|"$/g, '');
+                
+                // Extract verse text (remove quotes)
+                const verseText = lines[i].substring(
+                    lines[i].indexOf(',') + 1,
+                    lastQuoteCommaQuote + 1
+                ).replace(/^"|"$/g, '');
+                
+                if (reference && verseText) {
                     verses.push({
                         reference: reference,
-                        text: text.replace(/^"|"$/g, ''), // Remove surrounding quotes
+                        text: verseText,
                         version: 'esv' // Will be overridden when loading
                     });
                 }
