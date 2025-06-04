@@ -709,18 +709,55 @@
 
     <script>
         // --- Data: Scripture Verses ---
-        const scriptures = [
-             { text: "The LORD is my shepherd, I lack nothing.He makes me lie down in green pastures, he leads me beside quiet waters, he refreshes my soul.", reference: "Psalm 23:1-3", version: "esv" },
-             { text: "I can do all this through him who gives me strength.", reference: "Philippians 4:13", version: "esv" },
-             { text: "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.", reference: "John 3:16", version: "nlt" },
-             { text: "Trust in the LORD with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.", reference: "Proverbs 3:5-6", version: "nlt" },
-             { text: "Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go.", reference: "Joshua 1:9", version: "esv" },
-             { text: "The Lord is my light and my salvation— whom shall I fear? The Lord is the stronghold of my life— of whom shall I be afraid?", reference: "Psalm 27:1", version: "nlt" },
-             { text: "Come to me, all you who are weary and burdened, and I will give you rest.", reference: "Matthew 11:28", version: "esv" },
-             { text: "And we know that in all things God works for the good of those who love him, who have been called according to his purpose.", reference: "Romans 8:28", version: "esv" },
-             { text: "\"For I know the plans I have for you,\" declares the Lord, \"plans to prosper you and not to harm you, plans to give you hope and a future.\"", reference: "Jeremiah 29:11", version: "nlt" },
-             { text: "Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.", reference: "Philippians 4:6-7", version: "esv" }
-        ];
+        const scriptures = {
+            esv: [],
+            nlt: []
+        };
+
+        // Function to parse CSV content
+        function parseCSV(csv) {
+            const lines = csv.split('\n');
+            const headers = lines[0].split(',');
+            const verses = [];
+            
+            for (let i = 1; i  < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const values = lines[i].split(',');
+                const reference = values[0];
+                const text = values[1];
+                
+                if (reference && text) {
+                    verses.push({
+                        reference: reference,
+                        text: text.replace(/^"|"$/g, ''), // Remove surrounding quotes
+                        version: 'esv' // Will be overridden when loading
+                    });
+                }
+            }
+            
+            return verses;
+        }
+
+        // Load verses from CSV files
+        async function loadVerses() {
+            try {
+                const [esvResponse, nltResponse] = await Promise.all([
+                    fetch('data/versesESV.csv'),
+                    fetch('data/versesNLT.csv')
+                ]);
+
+                const [esvText, nltText] = await Promise.all([
+                    esvResponse.text(),
+                    nltResponse.text()
+                ]);
+
+                scriptures.esv = parseCSV(esvText).map(verse => ({ ...verse, version: 'esv' }));
+                scriptures.nlt = parseCSV(nltText).map(verse => ({ ...verse, version: 'nlt' }));
+            } catch (error) {
+                console.error('Error loading verses:', error);
+            }
+        }
 
         // --- State ---
         let currentVerseIndex = -1;
@@ -756,25 +793,25 @@
 
         // --- Functions ---
         function getFilteredScriptures() {
-            return scriptures.filter(verse => verse.version === selectedVersion);
+            return scriptures[selectedVersion] || [];
         }
 
         function displayVerseByIndex(index) {
-             const filteredScriptures = getFilteredScriptures();
-             if (!filteredScriptures || filteredScriptures.length === 0) {
-                 verseTextElement.textContent = `No scriptures available for ${selectedVersion.toUpperCase()}.`;
-                 verseReferenceElement.textContent = "";
-                 currentVerseIndex = -1;
-                 return;
-             }
-              if (index < 0 || index >= filteredScriptures.length) {
-                  console.error("Invalid index for displayVerseByIndex:", index);
-                  return;
-              }
-             currentVerseIndex = index;
-             const verse = filteredScriptures[index];
-             verseTextElement.textContent = verse.text;
-             verseReferenceElement.textContent = `${verse.reference} (${verse.version.toUpperCase()})`;
+            const filteredScriptures = getFilteredScriptures();
+            if (!filteredScriptures || filteredScriptures.length === 0) {
+                verseTextElement.textContent = `Loading verses...`;
+                verseReferenceElement.textContent = "";
+                currentVerseIndex = -1;
+                return;
+            }
+            if (index < 0 || index >= filteredScriptures.length) {
+                console.error("Invalid index for displayVerseByIndex:", index);
+                return;
+            }
+            currentVerseIndex = index;
+            const verse = filteredScriptures[index];
+            verseTextElement.textContent = verse.text;
+            verseReferenceElement.textContent = `${verse.reference} (${verse.version.toUpperCase()})`;
         }
 
         function showRandomVerse() {
@@ -801,7 +838,7 @@
         function startInterval() {
             clearInterval(verseInterval);
             if (autoAdvance) {
-                 verseInterval = setInterval(showNewVerse, 15000);
+                verseInterval = setInterval(showNewVerse, 15000);
             }
         }
         function resetInterval() {
@@ -941,7 +978,7 @@
             trigger.addEventListener('click', () => {
                 const content = trigger.nextElementSibling;
                 const icon = trigger.querySelector('.icon');
-                 if (!content || !icon) return;
+                if (!content || !icon) return;
                 const currentlyOpen = content.classList.contains('show');
                 document.querySelectorAll('.accordion-content.show').forEach(c => c.classList.remove('show'));
                 document.querySelectorAll('.icon.rotate').forEach(i => i.classList.remove('rotate'));
@@ -983,7 +1020,9 @@
         });
 
         // --- Initial Load ---
-        window.onload = () => {
+        window.onload = async () => {
+            await loadVerses(); // Load verses first
+
             const savedMode = localStorage.getItem('darkMode');
             setDarkMode(savedMode === 'true');
             if (modeSwitch) modeSwitch.checked = isDarkMode;
@@ -1013,9 +1052,9 @@
             startInterval();
 
             if (window.location.hash === '#faq') {
-                 showFaqPage();
+                showFaqPage();
             } else {
-                 showHomePage();
+                showHomePage();
             }
         };
     </script>
