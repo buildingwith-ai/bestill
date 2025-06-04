@@ -875,6 +875,22 @@
             localStorage.setItem('playMusic', playMusicPreference);
         }
 
+        // --- Page Toggle Functions ---
+        function showFaqPage() {
+            body.classList.add('faq-mode');
+            faqPage.classList.add('visible');
+            setControlsVisibility(false);
+            closeMenu();
+            window.location.hash = 'faq';
+        }
+
+        function showHomePage() {
+            body.classList.remove('faq-mode');
+            faqPage.classList.remove('visible');
+            setControlsVisibility(true);
+            window.location.hash = '';
+        }
+
         // --- Event Listeners ---
         if (refreshButton) {
             refreshButton.addEventListener('click', (e) => {
