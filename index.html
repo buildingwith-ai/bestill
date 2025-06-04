@@ -148,6 +148,118 @@
         </div>
     </div>
 
+    <script>
+        // --- Data: Scripture Verses ---
+        let versesESV = [];
+        let versesNLT = [];
+
+        async function loadVerses() {
+            const [esvResponse, nltResponse] = await Promise.all([
+                fetch('data/versesESV.csv'),
+                fetch('data/versesNLT.csv')
+            ]);
+
+            const esvText = await esvResponse.text();
+            const nltText = await nltResponse.text();
+
+            // Parse CSV files
+            versesESV = parseCSV(esvText);
+            versesNLT = parseCSV(nltText);
+        }
+
+        function parseCSV(csv) {
+            const lines = csv.split('\n');
+            const verses = [];
+            
+            // Skip header row
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const [reference, verse] = line.split(',');
+                if (!reference || !verse) continue;
+
+                verses.push({
+                    reference: reference,
+                    text: verse.replace(/^"|"$/g, ''), // Remove surrounding quotes
+                    version: 'esv' // Will be overridden for NLT
+                });
+            }
+            
+            return verses;
+        }
+
+        // --- State ---
+        let currentVerseIndex = -1;
+        let verseInterval = null;
+        let isDarkMode = false;
+        let isMenuOpen = false;
+        let selectedVersion = 'esv';
+        let autoAdvance = true;
+        let controlsVisible = false;
+        let initialInteractionDone = false;
+        let playMusicPreference = true;
+
+        function getFilteredScriptures() {
+            return selectedVersion === 'esv' ? versesESV : versesNLT;
+        }
+
+        function displayVerseByIndex(index) {
+            const filteredScriptures = getFilteredScriptures();
+            if (!filteredScriptures || filteredScriptures.length === 0) {
+                verseTextElement.textContent = `No scriptures available for ${selectedVersion.toUpperCase()}.`;
+                verseReferenceElement.textContent = "";
+                currentVerseIndex = -1;
+                return;
+            }
+            if (index < 0 || index >= filteredScriptures.length) {
+                console.error("Invalid index for displayVerseByIndex:", index);
+                return;
+            }
+            currentVerseIndex = index;
+            const verse = filteredScriptures[index];
+            verseTextElement.textContent = verse.text;
+            verseReferenceElement.textContent = `${verse.reference} (${selectedVersion.toUpperCase()})`;
+        }
+
+        window.onload = async () => {
+            await loadVerses();
+            
+            const savedMode = localStorage.getItem('darkMode');
+            setDarkMode(savedMode === 'true');
+            if (modeSwitch) modeSwitch.checked = isDarkMode;
+
+            const initialVersionItem = document.querySelector(`#side-menu .version-select li[data-version="${selectedVersion}"]`);
+            if (initialVersionItem) initialVersionItem.classList.add('active');
+
+            const savedAutoAdvance = localStorage.getItem('autoAdvance');
+            if (savedAutoAdvance !== null) {
+                autoAdvance = savedAutoAdvance === 'true';
+            }
+            if (pauseSwitch) pauseSwitch.checked = autoAdvance;
+
+            const savedMusicPreference = localStorage.getItem('playMusic');
+            if (savedMusicPreference !== null) {
+                playMusicPreference = savedMusicPreference === 'true';
+            }
+            if (musicSwitch) musicSwitch.checked = playMusicPreference;
+
+            if (playMusicPreference && backgroundAudio) {
+                setTimeout(() => {
+                    playAudio();
+                }, 100);
+            }
+
+            showNewVerse();
+            startInterval();
+
+            if (window.location.hash === '#faq') {
+                showFaqPage();
+            } else {
+                showHomePage();
+            }
+        };
+    </script>
     <script type="module" src="/src/js/main.js"></script>
 </body>
 </html>
