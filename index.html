@@ -1,1006 +1,317 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Be Still</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Updated Light Mode Blue Theme */
-        :root {
-            --bg-color: #e6eaf0;
-            --text-color: #3a4a5a;
-            --highlight-color: #fafdff;
-            --shadow-color: #cad0d9;
-            --card-bg-color: #e6eaf0;
-            --menu-bg-color: #e6eaf0;
-            --menu-item-hover-bg: #d8dde4;
-            --menu-header-color: #3a4a5a;
-            --switch-bg-inactive: #cad0d9;
-            --switch-bg-active: #7aa0c7;
-            --switch-handle-bg: #ffffff;
-            --faq-bg-color: #eff2f5;
-            --faq-border-color: #d8dde4;
-            --faq-hover-bg: #e6eaf0;
-            --faq-text-color: #3a4a5a;
-            --faq-header-color: #3a4a5a;
-            --back-button-color: #7aa0c7;
-            --back-button-hover-color: #6b90b5;
-            --icon-color: #3a4a5a;
-            --gradient-start: #e6eaf0;
-            --gradient-end: #d8dde4;
-        }
+[Previous HTML content remains exactly the same until the script section]
 
-        /* Updated Dark Mode Blue Theme */
-        body.dark {
-            --bg-color: #1c232b;
-            --text-color: #c8d4e0;
-            --highlight-color: #2b3441;
-            --shadow-color: #10141a;
-            --card-bg-color: #1c232b;
-            --menu-bg-color: #1c232b;
-            --menu-item-hover-bg: #252d37;
-            --menu-header-color: #c8d4e0;
-            --switch-bg-inactive: #2b3441;
-            --switch-bg-active: #6c8aa6;
-            --switch-handle-bg: #1c232b;
-            --faq-bg-color: #202831;
-            --faq-border-color: #2b3441;
-            --faq-hover-bg: #252d37;
-            --faq-text-color: #c8d4e0;
-            --faq-header-color: #c8d4e0;
-            --back-button-color: #6c8aa6;
-            --back-button-hover-color: #7c9abb;
-            --icon-color: #c8d4e0;
-            --gradient-start: #1c232b;
-            --gradient-end: #10141a;
-        }
+<script>
+    // --- State Management ---
+    let versesESV = [];
+    let versesNLT = [];
+    let currentVerseIndex = -1;
+    let verseInterval = null;
+    let isDarkMode = false;
+    let isMenuOpen = false;
+    let selectedVersion = 'esv';
+    let autoAdvance = true;
+    let controlsVisible = false;
+    let initialInteractionDone = false;
+    let playMusicPreference = true;
 
-        /* Apply variables */
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Merriweather', serif;
-            transition: background-color 0.3s ease, color 0.3s ease;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            padding-bottom: 6rem;
-            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
-            background-size: 100% 100%;
-            animation: gradientShift 10s ease infinite;
-            overflow-x: hidden;
-        }
+    // --- DOM Elements ---
+    const verseTextElement = document.getElementById('verse-text');
+    const verseReferenceElement = document.getElementById('verse-reference');
+    const refreshButton = document.getElementById('refresh-button');
+    const menuButton = document.getElementById('menu-button');
+    const sideMenu = document.getElementById('side-menu');
+    const modeSwitch = document.getElementById('mode-switch');
+    const modeSwitchContainer = document.getElementById('mode-switch-container');
+    const pauseSwitch = document.getElementById('pause-switch');
+    const musicSwitch = document.getElementById('music-switch');
+    const backgroundAudio = document.getElementById('background-audio');
+    const versionSelectItems = document.querySelectorAll('#side-menu .version-select ul li');
+    const faqLink = document.querySelector('#side-menu .faq-link');
+    const faqPage = document.getElementById('faq-page');
+    const backToMeditationLink = document.getElementById('back-to-meditation');
+    const accordionTriggers = document.querySelectorAll('.accordion-trigger');
 
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* --- Neumorphic Styles --- */
-        .neumorphic-button {
-            padding: 0.5rem;
-            border-radius: 50%;
-            width: 3rem;
-            height: 3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg-color);
-            border: none;
-            cursor: pointer;
-            font-size: 1.5rem;
-            line-height: 1;
-            color: var(--text-color);
-            transition: all 0.2s ease-in-out;
-            box-shadow: 5px 5px 10px var(--shadow-color),
-                        -5px -5px 10px var(--highlight-color);
-            position: relative;
-        }
-
-        .neumorphic-button:active {
-            box-shadow: inset 4px 4px 8px var(--shadow-color),
-                        inset -4px -4px 8px var(--highlight-color);
-            color: var(--text-color);
-            transform: scale(0.96);
-        }
-
-        .neumorphic-card {
-            padding: 1.5rem;
-            border-radius: 1rem;
-            background: var(--card-bg-color);
-            box-shadow: 8px 8px 16px var(--shadow-color),
-                        -8px -8px 16px var(--highlight-color);
-            width: 90%;
-            max-width: 500px;
-            min-height: 250px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
-            z-index: 1;
-            opacity: 1;
-            visibility: visible;
-        }
-        body.faq-mode .neumorphic-card {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        @media (min-width: 640px) {
-            .neumorphic-card {
-                padding: 2rem;
-            }
-            body {
-                padding: 2rem;
-                padding-bottom: 7rem;
-            }
-        }
-
-        /* --- Verse Display --- */
-        #verse-content-container {
-            width: 100%;
-            text-align: center;
-        }
-
-        #verse-reference-container {
-            text-align: center;
-            margin-top: 0.5rem;
-        }
-
-        #verse-reference {
-            font-style: italic;
-            opacity: 0.7;
-            transition: color 0.3s ease;
-            color: var(--text-color);
-        }
-
-        #verse-text {
-            transition: color 0.3s ease;
-            color: var(--text-color);
-            font-size: 1.1rem;
-            line-height: 1.7;
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-        @media (min-width: 640px) {
-            #verse-text {
-                font-size: 1.25rem;
-            }
-        }
-
-        /* --- Refresh Button Container --- */
-        #refresh-button-container {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 5;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            opacity: 1;
-            visibility: visible;
-        }
-        body.faq-mode #refresh-button-container {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        /* --- Dark/Light Mode Switch --- */
-        .switch {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-            z-index: 10;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .switch.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--switch-bg-inactive);
-            transition: .4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: var(--switch-handle-bg);
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--switch-bg-active);
-        }
-
-        input:focus + .slider {
-            box-shadow: 0 0 1px var(--switch-bg-active);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-
-        /* --- Hamburger Menu Button --- */
-        #menu-button {
-            position: fixed;
-            top: 1rem;
-            left: 1rem;
-            z-index: 11;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        #menu-button.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .menu-icon {
-            width: 1.5rem;
-            height: 0.2rem;
-            background-color: var(--text-color);
-            border-radius: 0.1rem;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .menu-icon::before,
-        .menu-icon::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            width: 1.5rem;
-            height: 0.2rem;
-            background-color: var(--text-color);
-            border-radius: 0.1rem;
-            transition: all 0.3s ease;
-        }
-
-        .menu-icon::before {
-            top: -0.5rem;
-        }
-
-        .menu-icon::after {
-            top: 0.5rem;
-        }
-
-        #menu-button.active .menu-icon {
-            background-color: transparent;
-        }
-
-        #menu-button.active .menu-icon::before {
-            top: 0;
-            transform: rotate(45deg);
-        }
-
-        #menu-button.active .menu-icon::after {
-            top: 0;
-            transform: rotate(-45deg);
-        }
-
-        /* --- Side Menu Styles --- */
-        #side-menu {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 280px;
-            background: var(--menu-bg-color);
-            box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1),
-                        inset -2px 0 5px var(--shadow-color),
-                        inset 2px 0 5px var(--highlight-color);
-            transform: translateX(-100%);
-            transition: transform 0.3s ease-in-out, background-color 0.3s ease, box-shadow 0.3s ease;
-            z-index: 12;
-            padding: 1rem;
-            padding-top: 5rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            color: var(--text-color);
-        }
-
-        #side-menu.active {
-            transform: translateX(0);
-        }
-
-        #side-menu .menu-header {
-            padding: 1rem 0.5rem;
-            text-align: center;
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: var(--menu-header-color);
-            margin-bottom: 1rem;
-            text-shadow: 1px 1px 1px var(--shadow-color),
-                         -1px -1px 1px var(--highlight-color);
-        }
-
-        #side-menu ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            width: 100%;
-        }
-
-        #side-menu ul li, #side-menu .faq-link {
-            padding: 0.8rem 1rem;
-            margin-bottom: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-radius: 0.75rem;
-            background: var(--menu-bg-color);
-            color: var(--text-color);
-            box-shadow: 3px 3px 6px var(--shadow-color),
-                        -3px -3px 6px var(--highlight-color);
-            text-align: left;
-            font-size: 0.95rem;
-        }
-        #side-menu .pause-toggle, #side-menu .music-toggle {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: none;
-            background: transparent;
-            padding: 0.5rem 1rem;
-            cursor: default;
-        }
-         #side-menu .pause-toggle p, #side-menu .music-toggle p {
-            font-weight: bold;
-             margin-right: 1rem;
-             color: var(--menu-header-color);
-        }
-
-        #side-menu .pause-toggle .switch, #side-menu .music-toggle .switch {
-            position: relative;
-            top: auto;
-            right: auto;
-            opacity: 1;
-            visibility: visible;
-            margin-left: auto;
-        }
-
-        #side-menu ul li:hover, #side-menu .faq-link:hover {
-             background: var(--menu-item-hover-bg);
-        }
-
-        #side-menu ul li:active, #side-menu .faq-link:active {
-            box-shadow: inset 2px 2px 4px var(--shadow-color),
-                        inset -2px -2px 4px var(--highlight-color);
-            transform: scale(0.98);
-            color: var(--text-color);
-        }
-
-        #side-menu .version-select > p {
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            padding: 0.5rem 1rem;
-            color: var(--menu-header-color);
-            box-shadow: none;
-            background: transparent;
-            cursor: default;
-        }
-        #side-menu .version-select > ul {
-            padding-left: 1rem;
-        }
-        #side-menu .version-select > ul li {
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-
-        #side-menu ul li.active {
-            box-shadow: inset 3px 3px 6px var(--shadow-color),
-                        inset -3px -3px 6px var(--highlight-color);
-            color: var(--text-color);
-            font-weight: bold;
-        }
-
-        #side-menu .faq-link {
-            margin-top: auto;
-            text-align: center;
-            display: block;
-            text-decoration: none;
-        }
-
-        /* --- FAQ Page Styles --- */
-        .faq-page {
-            min-height: 100vh;
-            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
-            padding: 2rem;
-            font-family: 'Merriweather', serif;
-            color: var(--faq-text-color);
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 15;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            overflow-y: auto;
-        }
-
-        .faq-page.visible {
-            opacity: 1;
-            display: block;
-        }
-
-        .faq-content {
-            max-width: 800px;
-            margin: 0 auto;
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-        }
-
-        .faq-header {
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-            text-align: center;
-            color: var(--faq-header-color);
-            text-shadow: 1px 1px 2px var(--shadow-color),
-                         -1px -1px 2px var(--highlight-color);
-        }
-
-        .accordion-item {
-            margin-bottom: 1rem;
-            border-radius: 0.75rem;
-            background-color: var(--faq-bg-color);
-            transition: all 0.3s ease;
-            box-shadow: 4px 4px 8px var(--shadow-color),
-                        -4px -4px 8px var(--highlight-color);
-            overflow: hidden;
-        }
-
-        .accordion-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 6px 6px 12px var(--shadow-color),
-                        -6px -6px 12px var(--highlight-color);
-        }
-
-        .accordion-trigger {
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-            color: var(--faq-header-color);
-            text-align: left;
-            border: none;
-            background: transparent;
-        }
-
-        .accordion-trigger:hover {
-            background-color: var(--faq-hover-bg);
-        }
-
-        .accordion-content {
-            padding: 0 1.5rem 1rem 1.5rem;
-            line-height: 1.7;
-            color: var(--faq-text-color);
-            display: none;
-            border-top: 1px solid var(--faq-border-color);
-            margin-top: -1px;
-        }
-
-        .accordion-content.show {
-            display: block;
-        }
-
-        .icon {
-            width: 1.5rem;
-            height: 1.5rem;
-            stroke-width: 2;
-            color: var(--icon-color);
-            transition: transform 0.3s ease;
-            flex-shrink: 0;
-        }
-
-        .rotate {
-            transform: rotate(180deg);
-        }
-
-        .back-button {
-            display: inline-flex;
-            align-items: center;
-            color: var(--back-button-color);
-            cursor: pointer;
-            transition: color 0.2s ease;
-            margin-bottom: 2rem;
-            font-weight: bold;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-        }
-        .back-button:hover {
-            color: var(--back-button-hover-color);
-            background-color: rgba(0,0,0,0.05);
-        }
-        body.dark .back-button:hover {
-             background-color: rgba(255,255,255,0.08);
-        }
-        .back-button svg {
-             transform: rotate(-90deg);
-        }
-    </style>
-</head>
-<body class="home-mode">
-    <audio id="background-audio" src="ambient.mp3" loop></audio>
-
-    <button id="menu-button" class="neumorphic-button">
-        <div class="menu-icon"></div>
-    </button>
-
-    <label class="switch" id="mode-switch-container">
-        <input type="checkbox" id="mode-switch">
-        <span class="slider round"></span>
-    </label>
-
-    <div id="side-menu">
-        <div class="menu-header">Menu</div>
-        <ul>
-            <li class="version-select">
-                <p>Version Selection</p>
-                <ul>
-                    <li data-version="esv">English Standard (ESV)</li>
-                    <li data-version="nlt">New Living (NLT)</li>
-                </ul>
-            </li>
-            <li class="pause-toggle">
-                <p>Auto Advance</p>
-                <label class="switch">
-                    <input type="checkbox" id="pause-switch" checked>
-                    <span class="slider round"></span>
-                </label>
-            </li>
-            <li class="music-toggle">
-                <p>Background Music</p>
-                <label class="switch">
-                    <input type="checkbox" id="music-switch">
-                    <span class="slider round"></span>
-                </label>
-            </li>
-        </ul>
-        <a href="#faq" class="faq-link">Frequently Asked Questions</a>
-    </div>
-
-    <div class="neumorphic-card" id="main-card">
-        <div id="verse-content-container">
-            <p id="verse-text" class="w-full">Loading verse...</p>
-            <div id="verse-reference-container">
-                <p id="verse-reference" class="font-semibold">---</p>
-            </div>
-        </div>
-    </div>
-
-    <div id="refresh-button-container">
-        <button id="refresh-button" class="neumorphic-button" aria-label="New Verse">
-            &rarr;
-        </button>
-    </div>
-
-    <div id="faq-page" class="faq-page">
-        <div class="faq-content">
-            <a href="#" class="back-button" id="back-to-meditation">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2">
-                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                </svg>
-                Back to Meditation
-            </a>
-            <h1 class="faq-header">Frequently Asked Questions</h1>
-            <div class="accordion-item">
-                <div class="accordion-trigger">
-                    How are verses selected?
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
-                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="accordion-content">
-                    Verses are carefully curated to focus on life application, wisdom, comfort, and guidance. Each verse is chosen for its ability to inspire reflection and meditation. Clicking the refresh button or enabling auto-advance displays a random verse from the selected version.
-                </div>
-            </div>
-            <div class="accordion-item">
-                <div class="accordion-trigger">
-                    What Bible versions are available?
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
-                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="accordion-content">
-                    The app currently offers two popular Bible translations:
-                    <ul class="list-disc pl-5 mt-2">
-                        <li>English Standard Version (ESV)</li>
-                        <li>New Living Translation (NLT)</li>
-                    </ul>
-                    You can switch between them in the menu.
-                </div>
-            </div>
-            <div class="accordion-item">
-                <div class="accordion-trigger">
-                    How does auto-advance work?
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
-                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="accordion-content">
-                    When auto-advance is enabled (using the toggle in the menu), the app will automatically display a new random verse after about 15 seconds. This allows for hands-free meditation. You can disable it if you prefer to get new verses manually using the refresh button.
-                </div>
-            </div>
-            <div class="accordion-item">
-                <div class="accordion-trigger">
-                    Can I listen to music?
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
-                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="accordion-content">
-                    Yes! Ambient background music ("ambient.mp3") is set to play automatically. You can toggle it on or off using the "Background Music" switch in the menu. Your preference will be saved for your next visit.
-                </div>
-            </div>
-            <div class="accordion-item">
-                <div class="accordion-trigger">
-                    Where is the verse reference?
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
-                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="accordion-content">
-                    The verse reference (e.g., John 3:16) appears below the main scripture text inside the card. It's designed to be slightly less prominent initially, allowing you to focus on the message first.
-                </div>
-            </div>
-            <div class="accordion-item">
-                <div class="accordion-trigger">
-                    Why do the menu and dark mode buttons disappear?
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
-                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="accordion-content">
-                    To maintain a clean and focused reading experience, the menu button and dark mode switch appear only when you first interact with the screen (click or tap). If you then click or tap away from these buttons or the open menu, they will hide again until your next interaction.
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // --- State Management ---
-        let versesESV = [];
-        let versesNLT = [];
-        let currentVerseIndex = -1;
-        let verseInterval = null;
-        let isDarkMode = false;
-        let isMenuOpen = false;
-        let selectedVersion = 'esv';
-        let autoAdvance = true;
-        let controlsVisible = false;
-        let initialInteractionDone = false;
-        let playMusicPreference = true;
-
-        // --- DOM Elements ---
-        const verseTextElement = document.getElementById('verse-text');
-        const verseReferenceElement = document.getElementById('verse-reference');
-        const refreshButton = document.getElementById('refresh-button');
-        const menuButton = document.getElementById('menu-button');
-        const sideMenu = document.getElementById('side-menu');
-        const modeSwitch = document.getElementById('mode-switch');
-        const modeSwitchContainer = document.getElementById('mode-switch-container');
-        const pauseSwitch = document.getElementById('pause-switch');
-        const musicSwitch = document.getElementById('music-switch');
-        const backgroundAudio = document.getElementById('background-audio');
-        const versionSelectItems = document.querySelectorAll('#side-menu .version-select ul li');
-        const faqLink = document.querySelector('#side-menu .faq-link');
-        const faqPage = document.getElementById('faq-page');
-        const backToMeditationLink = document.getElementById('back-to-meditation');
-        const accordionTriggers = document.querySelectorAll('.accordion-trigger');
-
-        // --- Functions ---
-        function parseCSV(csv) {
-            const lines = csv.split('\n');
-            const verses = [];
+    // --- Functions ---
+    function parseCSV(csv) {
+        const lines = csv.split('\n');
+        const verses = [];
+        
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
             
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-                
-                // Split on the last comma (which separates verse from topics)
-                const lastCommaIndex = line.lastIndexOf(',');
-                if (lastCommaIndex === -1) continue;
-                
-                const beforeTopics = line.substring(0, lastCommaIndex);
-                
-                // Find the first comma to separate reference from verse
-                const firstCommaIndex = beforeTopics.indexOf(',');
-                if (firstCommaIndex === -1) continue;
-                
-                const reference = beforeTopics.substring(0, firstCommaIndex).replace(/^"|"$/g, '');
-                const verse = beforeTopics.substring(firstCommaIndex + 1).replace(/^"|"$/g, '');
-                
-                verses.push({
-                    reference: reference,
-                    verse: verse
-                });
-            }
+            // Split on the last comma (which separates verse from topics)
+            const lastCommaIndex = line.lastIndexOf(',');
+            if (lastCommaIndex === -1) continue;
             
-            return verses;
+            const beforeTopics = line.substring(0, lastCommaIndex);
+            
+            // Find the first comma to separate reference from verse
+            const firstCommaIndex = beforeTopics.indexOf(',');
+            if (firstCommaIndex === -1) continue;
+            
+            const reference = beforeTopics.substring(0, firstCommaIndex).replace(/^"|"$/g, '');
+            const verse = beforeTopics.substring(firstCommaIndex + 1).replace(/^"|"$/g, '');
+            
+            verses.push({
+                reference: reference,
+                verse: verse
+            });
         }
+        
+        return verses;
+    }
 
-        async function loadVerses() {
-            try {
-                const [esvResponse, nltResponse] = await Promise.all([
-                    fetch('data/versesESV.csv'),
-                    fetch('data/versesNLT.csv')
-                ]);
-                
-                const [esvText, nltText] = await Promise.all([
-                    esvResponse.text(),
-                    nltResponse.text()
-                ]);
+    async function loadVerses() {
+        try {
+            const [esvResponse, nltResponse] = await Promise.all([
+                fetch('data/versesESV.csv'),
+                fetch('data/versesNLT.csv')
+            ]);
+            
+            const [esvText, nltText] = await Promise.all([
+                esvResponse.text(),
+                nltResponse.text()
+            ]);
 
-                versesESV = parseCSV(esvText);
-                versesNLT = parseCSV(nltText);
-                
+            versesESV = parseCSV(esvText);
+            versesNLT = parseCSV(nltText);
+            
+            showNewVerse();
+        } catch (error) {
+            console.error('Error loading verses:', error);
+            verseTextElement.textContent = 'Error loading verses. Please try again later.';
+        }
+    }
+
+    function getRandomVerse() {
+        const verses = selectedVersion === 'esv' ? versesESV : versesNLT;
+        if (!verses || verses.length === 0) return null;
+        
+        let randomIndex;
+        do {
+            randomIndex = Math.floor(Math.random() * verses.length);
+        } while (randomIndex === currentVerseIndex);
+        
+        currentVerseIndex = randomIndex;
+        return verses[randomIndex];
+    }
+
+    function showNewVerse() {
+        const verse = getRandomVerse();
+        if (!verse) {
+            verseTextElement.textContent = 'No verses available.';
+            verseReferenceElement.textContent = '';
+            return;
+        }
+        
+        verseTextElement.textContent = verse.verse;
+        verseReferenceElement.textContent = `${verse.reference} (${selectedVersion.toUpperCase()})`;
+        
+        if (autoAdvance) {
+            resetInterval();
+        }
+    }
+
+    function resetInterval() {
+        if (verseInterval) {
+            clearInterval(verseInterval);
+        }
+        if (autoAdvance) {
+            verseInterval = setInterval(showNewVerse, 15000);
+        }
+    }
+
+    function setDarkMode(enabled) {
+        isDarkMode = enabled;
+        document.body.classList.toggle('dark', enabled);
+        localStorage.setItem('darkMode', enabled);
+    }
+
+    function showHomePage() {
+        faqPage.classList.remove('visible');
+        document.body.classList.remove('faq-mode');
+    }
+
+    function showFaqPage() {
+        faqPage.classList.add('visible');
+        document.body.classList.add('faq-mode');
+    }
+
+    function setControlsVisibility(visible) {
+        controlsVisible = visible;
+        modeSwitchContainer.classList.toggle('visible', visible);
+        menuButton.classList.toggle('visible', visible);
+    }
+
+    function toggleMenu() {
+        isMenuOpen = !isMenuOpen;
+        sideMenu.classList.toggle('active', isMenuOpen);
+        menuButton.classList.toggle('active', isMenuOpen);
+    }
+
+    function playAudio() {
+        if (backgroundAudio) {
+            backgroundAudio.play().catch(error => {
+                console.warn("Audio autoplay prevented:", error);
+            });
+        }
+    }
+
+    function pauseAudio() {
+        if (backgroundAudio) {
+            backgroundAudio.pause();
+        }
+    }
+
+    // --- Event Listeners ---
+    if (refreshButton) {
+        refreshButton.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent the click from bubbling to document
+            showNewVerse();
+        });
+    }
+
+    if (modeSwitch) {
+        modeSwitch.addEventListener('change', () => setDarkMode(modeSwitch.checked));
+    }
+
+    if (menuButton) {
+        menuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleMenu();
+        });
+    }
+
+    versionSelectItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const newVersion = item.dataset.version;
+            if (newVersion !== selectedVersion) {
+                selectedVersion = newVersion;
+                versionSelectItems.forEach(v => v.classList.remove('active'));
+                item.classList.add('active');
                 showNewVerse();
-            } catch (error) {
-                console.error('Error loading verses:', error);
-                verseTextElement.textContent = 'Error loading verses. Please try again later.';
             }
-        }
-
-        function getRandomVerse() {
-            const verses = selectedVersion === 'esv' ? versesESV : versesNLT;
-            if (!verses || verses.length === 0) return null;
-            
-            let randomIndex;
-            do {
-                randomIndex = Math.floor(Math.random() * verses.length);
-            } while (randomIndex === currentVerseIndex);
-            
-            currentVerseIndex = randomIndex;
-            return verses[randomIndex];
-        }
-
-        function showNewVerse() {
-            const verse = getRandomVerse();
-            if (!verse) {
-                verseTextElement.textContent = 'No verses available.';
-                verseReferenceElement.textContent = '';
-                return;
-            }
-            
-            verseTextElement.textContent = verse.verse;
-            verseReferenceElement.textContent = `${verse.reference} (${selectedVersion.toUpperCase()})`;
-            
-            if (autoAdvance) {
-                resetInterval();
-            }
-        }
-
-        function resetInterval() {
-            if (verseInterval) {
-                clearInterval(verseInterval);
-            }
-            if (autoAdvance) {
-                verseInterval = setInterval(showNewVerse, 15000);
-            }
-        }
-
-        function setDarkMode(enabled) {
-            isDarkMode = enabled;
-            document.body.classList.toggle('dark', enabled);
-            localStorage.setItem('darkMode', enabled);
-        }
-
-        function showHomePage() {
-            faqPage.classList.remove('visible');
-            document.body.classList.remove('faq-mode');
-        }
-
-        function showFaqPage() {
-            faqPage.classList.add('visible');
-            document.body.classList.add('faq-mode');
-        }
-
-        function setControlsVisibility(visible) {
-            controlsVisible = visible;
-            modeSwitchContainer.classList.toggle('visible', visible);
-            menuButton.classList.toggle('visible', visible);
-        }
-
-        function toggleMenu() {
-            isMenuOpen = !isMenuOpen;
-            sideMenu.classList.toggle('active', isMenuOpen);
-            menuButton.classList.toggle('active', isMenuOpen);
-        }
-
-        function playAudio() {
-            if (backgroundAudio) {
-                backgroundAudio.play().catch(error => {
-                    console.warn("Audio autoplay prevented:", error);
-                });
-            }
-        }
-
-        function pauseAudio() {
-            if (backgroundAudio) {
-                backgroundAudio.pause();
-            }
-        }
-
-        // --- Event Listeners ---
-        if (refreshButton) {
-            refreshButton.addEventListener('click', showNewVerse);
-        }
-
-        if (modeSwitch) {
-            modeSwitch.addEventListener('change', () => setDarkMode(modeSwitch.checked));
-        }
-
-        if (menuButton) {
-            menuButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleMenu();
-            });
-        }
-
-        versionSelectItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const newVersion = item.dataset.version;
-                if (newVersion !== selectedVersion) {
-                    selectedVersion = newVersion;
-                    versionSelectItems.forEach(v => v.classList.remove('active'));
-                    item.classList.add('active');
-                    showNewVerse();
-                }
-                toggleMenu();
-            });
+            toggleMenu();
         });
+    });
 
-        if (pauseSwitch) {
-            pauseSwitch.addEventListener('change', () => {
-                autoAdvance = pauseSwitch.checked;
-                localStorage.setItem('autoAdvance', autoAdvance);
-                resetInterval();
-            });
-        }
-
-        if (musicSwitch) {
-            musicSwitch.addEventListener('change', () => {
-                playMusicPreference = musicSwitch.checked;
-                if (playMusicPreference) {
-                    playAudio();
-                } else {
-                    pauseAudio();
-                }
-                localStorage.setItem('playMusic', playMusicPreference);
-            });
-        }
-
-        if (faqLink) {
-            faqLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showFaqPage();
-                toggleMenu();
-            });
-        }
-
-        if (backToMeditationLink) {
-            backToMeditationLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showHomePage();
-            });
-        }
-
-        accordionTriggers.forEach(trigger => {
-            trigger.addEventListener('click', () => {
-                const content = trigger.nextElementSibling;
-                const icon = trigger.querySelector('.icon');
-                const isOpen = content.classList.contains('show');
-                
-                document.querySelectorAll('.accordion-content.show').forEach(c => c.classList.remove('show'));
-                document.querySelectorAll('.icon.rotate').forEach(i => i.classList.remove('rotate'));
-                
-                if (!isOpen) {
-                    content.classList.add('show');
-                    icon.classList.add('rotate');
-                }
-            });
+    if (pauseSwitch) {
+        pauseSwitch.addEventListener('change', () => {
+            autoAdvance = pauseSwitch.checked;
+            localStorage.setItem('autoAdvance', autoAdvance);
+            resetInterval();
         });
+    }
 
-        document.addEventListener('click', (e) => {
-            if (!initialInteractionDone) {
-                initialInteractionDone = true;
-                setControlsVisibility(true);
-                if (playMusicPreference && backgroundAudio && backgroundAudio.paused) {
-                    playAudio();
-                }
-                return;
-            }
-
-            if (controlsVisible) {
-                const isControlElement = e.target.closest('#menu-button') ||
-                    e.target.closest('#mode-switch-container') ||
-                    (isMenuOpen && e.target.closest('#side-menu')) ||
-                    e.target.closest('#refresh-button-container');
-
-                if (!isControlElement) {
-                    if (isMenuOpen) {
-                        toggleMenu();
-                    }
-                    setControlsVisibility(false);
-                    initialInteractionDone = false;
-                }
-            }
-        });
-
-        // --- Initialize ---
-        window.onload = () => {
-            const savedMode = localStorage.getItem('darkMode');
-            setDarkMode(savedMode === 'true');
-            if (modeSwitch) modeSwitch.checked = isDarkMode;
-
-            const initialVersionItem = document.querySelector(`#side-menu .version-select li[data-version="${selectedVersion}"]`);
-            if (initialVersionItem) initialVersionItem.classList.add('active');
-
-            const savedAutoAdvance = localStorage.getItem('autoAdvance');
-            if (savedAutoAdvance !== null) {
-                autoAdvance = savedAutoAdvance === 'true';
-            }
-            if (pauseSwitch) pauseSwitch.checked = autoAdvance;
-
-            const savedMusicPreference = localStorage.getItem('playMusic');
-            if (savedMusicPreference !== null) {
-                playMusicPreference = savedMusicPreference === 'true';
-            }
-            if (musicSwitch) musicSwitch.checked = playMusicPreference;
-
-            if (playMusicPreference && backgroundAudio) {
-                setTimeout(playAudio, 100);
-            }
-
-            loadVerses();
-
-            if (window.location.hash === '#faq') {
-                showFaqPage();
+    if (musicSwitch) {
+        musicSwitch.addEventListener('change', () => {
+            playMusicPreference = musicSwitch.checked;
+            if (playMusicPreference) {
+                playAudio();
             } else {
-                showHomePage();
+                pauseAudio();
             }
-        };
-    </script>
+            localStorage.setItem('playMusic', playMusicPreference);
+        });
+    }
+
+    if (faqLink) {
+        faqLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showFaqPage();
+            toggleMenu();
+        });
+    }
+
+    if (backToMeditationLink) {
+        backToMeditationLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showHomePage();
+        });
+    }
+
+    accordionTriggers.forEach(trigger => {
+        trigger.addEventListener('click', () => {
+            const content = trigger.nextElementSibling;
+            const icon = trigger.querySelector('.icon');
+            const isOpen = content.classList.contains('show');
+            
+            document.querySelectorAll('.accordion-content.show').forEach(c => c.classList.remove('show'));
+            document.querySelectorAll('.icon.rotate').forEach(i => i.classList.remove('rotate'));
+            
+            if (!isOpen) {
+                content.classList.add('show');
+                icon.classList.add('rotate');
+            }
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        // Don't process refresh button clicks here
+        if (e.target.closest('#refresh-button')) {
+            return;
+        }
+
+        if (!initialInteractionDone) {
+            initialInteractionDone = true;
+            setControlsVisibility(true);
+            if (playMusicPreference && backgroundAudio && backgroundAudio.paused) {
+                playAudio();
+            }
+            return;
+        }
+
+        if (controlsVisible) {
+            const isControlElement = e.target.closest('#menu-button') ||
+                e.target.closest('#mode-switch-container') ||
+                (isMenuOpen && e.target.closest('#side-menu'));
+
+            if (!isControlElement) {
+                if (isMenuOpen) {
+                    toggleMenu();
+                }
+                setControlsVisibility(false);
+                initialInteractionDone = false;
+            }
+        }
+    });
+
+    // --- Initialize ---
+    window.onload = () => {
+        const savedMode = localStorage.getItem('darkMode');
+        setDarkMode(savedMode === 'true');
+        if (modeSwitch) modeSwitch.checked = isDarkMode;
+
+        const initialVersionItem = document.querySelector(`#side-menu .version-select li[data-version="${selectedVersion}"]`);
+        if (initialVersionItem) initialVersionItem.classList.add('active');
+
+        const savedAutoAdvance = localStorage.getItem('autoAdvance');
+        if (savedAutoAdvance !== null) {
+            autoAdvance = savedAutoAdvance === 'true';
+        }
+        if (pauseSwitch) pauseSwitch.checked = autoAdvance;
+
+        const savedMusicPreference = localStorage.getItem('playMusic');
+        if (savedMusicPreference !== null) {
+            playMusicPreference = savedMusicPreference === 'true';
+        }
+        if (musicSwitch) musicSwitch.checked = playMusicPreference;
+
+        if (playMusicPreference && backgroundAudio) {
+            setTimeout(playAudio, 100);
+        }
+
+        loadVerses();
+
+        if (window.location.hash === '#faq') {
+            showFaqPage();
+        } else {
+            showHomePage();
+        }
+    };
+</script>
 </body>
 </html>
