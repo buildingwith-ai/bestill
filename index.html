@@ -943,6 +943,11 @@
         });
 
         document.addEventListener('click', (e) => {
+            // Don't show controls when clicking the refresh button
+            if (e.target.closest('#refresh-button')) {
+                return;
+            }
+
             if (!initialInteractionDone) {
                 initialInteractionDone = true;
                 setControlsVisibility(true);
@@ -955,8 +960,7 @@
             if (controlsVisible) {
                 const isControlElement = e.target.closest('#menu-button') ||
                     e.target.closest('#mode-switch-container') ||
-                    (isMenuOpen && e.target.closest('#side-menu')) ||
-                    e.target.closest('#refresh-button-container');
+                    (isMenuOpen && e.target.closest('#side-menu'));
 
                 if (!isControlElement) {
                     if (isMenuOpen) {
