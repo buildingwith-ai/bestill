@@ -392,13 +392,22 @@
             padding: 0.5rem 1rem;
             cursor: default;
         }
-         #side-menu .pause-toggle p, #side-menu .music-toggle p {
+        #side-menu .pause-toggle, #side-menu .music-toggle, #side-menu .fullscreen-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            cursor: default;
+        }
+         #side-menu .pause-toggle p, #side-menu .music-toggle p, #side-menu .fullscreen-toggle p {
             font-weight: bold;
              margin-right: 1rem;
              color: var(--menu-header-color);
         }
 
-        #side-menu .pause-toggle .switch, #side-menu .music-toggle .switch {
+        #side-menu .pause-toggle .switch, #side-menu .music-toggle .switch, #side-menu .fullscreen-toggle .switch {
             position: relative;
             top: auto;
             right: auto;
@@ -608,6 +617,13 @@
                     <span class="slider round"></span>
                 </label>
             </li>
+            <li class="fullscreen-toggle">
+                <p>Fullscreen</p>
+                <label class="switch">
+                    <input type="checkbox" id="fullscreen-switch">
+                    <span class="slider round"></span>
+                </label>
+            </li>
         </ul>
         <a href="#faq" class="faq-link">Frequently Asked Questions</a>
     </div>
@@ -689,6 +705,17 @@
             </div>
             <div class="accordion-item">
                 <div class="accordion-trigger">
+                    How do I use fullscreen mode?
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
+                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="accordion-content">
+                    Fullscreen mode provides an immersive meditation experience by hiding browser elements. On desktop, you can quickly toggle fullscreen using the <strong>F</strong> key or <strong>F11</strong>. On mobile devices, use the "Fullscreen" toggle in the menu. Your fullscreen preference is saved for future visits.
+                </div>
+            </div>
+            <div class="accordion-item">
+                <div class="accordion-trigger">
                     Where is the verse reference?
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 icon">
                         <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
@@ -725,6 +752,7 @@
         let controlsVisible = false;
         let initialInteractionDone = false;
         let playMusicPreference = true;
+        let isFullscreen = false;
 
         // --- DOM Elements ---
         const verseTextElement = document.getElementById('verse-text');
@@ -736,6 +764,7 @@
         const modeSwitchContainer = document.getElementById('mode-switch-container');
         const pauseSwitch = document.getElementById('pause-switch');
         const musicSwitch = document.getElementById('music-switch');
+        const fullscreenSwitch = document.getElementById('fullscreen-switch');
         const backgroundAudio = document.getElementById('background-audio');
         const versionSelectItems = document.querySelectorAll('#side-menu .version-select ul li');
         const faqLink = document.querySelector('#side-menu .faq-link');
@@ -876,6 +905,26 @@
             }
         }
 
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    isFullscreen = true;
+                    if (fullscreenSwitch) fullscreenSwitch.checked = true;
+                    localStorage.setItem('fullscreenPreference', 'true');
+                }).catch(err => {
+                    console.warn('Error attempting to enable fullscreen:', err);
+                });
+            } else {
+                document.exitFullscreen().then(() => {
+                    isFullscreen = false;
+                    if (fullscreenSwitch) fullscreenSwitch.checked = false;
+                    localStorage.setItem('fullscreenPreference', 'false');
+                }).catch(err => {
+                    console.warn('Error attempting to exit fullscreen:', err);
+                });
+            }
+        }
+
         // --- Event Listeners ---
         if (refreshButton) {
             refreshButton.addEventListener('click', showNewVerse);
@@ -925,6 +974,12 @@
             });
         }
 
+        if (fullscreenSwitch) {
+            fullscreenSwitch.addEventListener('change', () => {
+                toggleFullscreen();
+            });
+        }
+
         if (faqLink) {
             faqLink.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -954,6 +1009,23 @@
                     icon.classList.add('rotate');
                 }
             });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // F key or F11 for fullscreen toggle (only if not in an input field)
+            if ((e.key === 'f' || e.key === 'F' || e.key === 'F11') && 
+                !e.target.matches('input, textarea, select')) {
+                e.preventDefault();
+                toggleFullscreen();
+            }
+        });
+
+        // Listen for fullscreen changes (e.g., user presses Escape)
+        document.addEventListener('fullscreenchange', () => {
+            isFullscreen = !!document.fullscreenElement;
+            if (fullscreenSwitch) fullscreenSwitch.checked = isFullscreen;
+            localStorage.setItem('fullscreenPreference', isFullscreen.toString());
         });
 
         document.addEventListener('click', (e) => {
@@ -1006,6 +1078,12 @@
                 playMusicPreference = savedMusicPreference === 'true';
             }
             if (musicSwitch) musicSwitch.checked = playMusicPreference;
+
+            const savedFullscreenPreference = localStorage.getItem('fullscreenPreference');
+            if (savedFullscreenPreference === 'true') {
+                // Don't auto-enter fullscreen on load, just set the switch state
+                if (fullscreenSwitch) fullscreenSwitch.checked = false;
+            }
 
             if (playMusicPreference && backgroundAudio) {
                 setTimeout(playAudio, 100);
