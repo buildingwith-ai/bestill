@@ -78,6 +78,19 @@
             overflow-x: hidden;
         }
 
+        /* Ensure html also has the background to prevent white showing during scroll */
+        html {
+            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+            background-attachment: fixed;
+            min-height: 100%;
+        }
+
+        /* Dark mode for html */
+        body.dark html {
+            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+            background-attachment: fixed;
+        }
+
         @keyframes gradientShift {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
