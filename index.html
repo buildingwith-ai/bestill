@@ -35,7 +35,7 @@
         }
 
         /* Updated Dark Mode Blue Theme */
-        body.dark {
+        html.dark {
             --bg-color: #1c232b;
             --text-color: #c8d4e0;
             --highlight-color: #2b3441;
@@ -78,17 +78,10 @@
             overflow-x: hidden;
         }
 
-        /* Ensure html also has the background to prevent white showing during scroll */
+        /* Set html background to match theme base color for overscroll */
         html {
-            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
-            background-attachment: fixed;
-            min-height: 100%;
-        }
-
-        /* Dark mode for html */
-        body.dark html {
-            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
-            background-attachment: fixed;
+            background-color: var(--bg-color);
+            transition: background-color 0.3s ease;
         }
 
         @keyframes gradientShift {
@@ -908,7 +901,7 @@
 
         function setDarkMode(enabled) {
             isDarkMode = enabled;
-            document.body.classList.toggle('dark', enabled);
+            document.documentElement.classList.toggle('dark', enabled);
             localStorage.setItem('darkMode', enabled);
         }
 
