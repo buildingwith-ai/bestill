@@ -60,28 +60,23 @@
         }
 
         /* Apply variables */
-        html {
-            height: 100%;
-            background: var(--bg-color) linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
-            background-size: 100% 100%;
-            animation: gradientShift 10s ease infinite;
-            overflow-y: scroll;
-            overflow-x: hidden;
-            transition: background-color 0.3s ease;
-        }
-
         body {
-            background-color: transparent;
+            background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Merriweather', serif;
             transition: background-color 0.3s ease, color 0.3s ease;
             min-height: 100vh;
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 1rem;
             padding-bottom: 6rem;
+            background: var(--bg-color) linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+            background-size: 100% 100%;
+            animation: gradientShift 10s ease infinite;
+            overflow-x: hidden;
             margin: 0;
         }
 
