@@ -711,7 +711,7 @@
                     </svg>
                 </div>
                 <div class="accordion-content">
-                    Fullscreen mode provides an immersive meditation experience by hiding browser elements. On desktop, you can quickly toggle fullscreen using the <strong>F</strong> key or <strong>F11</strong>. On mobile devices, use the "Fullscreen" toggle in the menu. Your fullscreen preference is saved for future visits.
+                    Fullscreen mode provides an immersive meditation experience by hiding browser elements and maximizing screen space. On desktop, you can quickly toggle fullscreen using the <strong>F</strong> key or <strong>F11</strong>. On mobile devices, use the "Fullscreen" toggle in the menu to hide the address bar and maximize the viewing area. Your fullscreen preference is saved for future visits.
                 </div>
             </div>
             <div class="accordion-item">
@@ -906,22 +906,76 @@
         }
 
         function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().then(() => {
+            // Check if we're on mobile
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                           (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+            
+            if (isMobile) {
+                // Mobile fullscreen implementation
+                if (!isFullscreen) {
+                    // Enter mobile fullscreen
+                    document.body.style.position = 'fixed';
+                    document.body.style.top = '0';
+                    document.body.style.left = '0';
+                    document.body.style.width = '100vw';
+                    document.body.style.height = '100vh';
+                    document.body.style.overflow = 'hidden';
+                    document.body.style.zIndex = '9999';
+                    
+                    // Hide address bar on mobile
+                    window.scrollTo(0, 1);
+                    setTimeout(() => window.scrollTo(0, 0), 100);
+                    
+                    // Try native fullscreen as fallback
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen().catch(() => {
+                            // Ignore errors on mobile
+                        });
+                    }
+                    
                     isFullscreen = true;
                     if (fullscreenSwitch) fullscreenSwitch.checked = true;
                     localStorage.setItem('fullscreenPreference', 'true');
-                }).catch(err => {
-                    console.warn('Error attempting to enable fullscreen:', err);
-                });
-            } else {
-                document.exitFullscreen().then(() => {
+                } else {
+                    // Exit mobile fullscreen
+                    document.body.style.position = '';
+                    document.body.style.top = '';
+                    document.body.style.left = '';
+                    document.body.style.width = '';
+                    document.body.style.height = '';
+                    document.body.style.overflow = '';
+                    document.body.style.zIndex = '';
+                    
+                    // Try native fullscreen exit as fallback
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen().catch(() => {
+                            // Ignore errors on mobile
+                        });
+                    }
+                    
                     isFullscreen = false;
                     if (fullscreenSwitch) fullscreenSwitch.checked = false;
                     localStorage.setItem('fullscreenPreference', 'false');
-                }).catch(err => {
-                    console.warn('Error attempting to exit fullscreen:', err);
-                });
+                }
+            } else {
+                // Desktop fullscreen implementation
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().then(() => {
+                        isFullscreen = true;
+                        if (fullscreenSwitch) fullscreenSwitch.checked = true;
+                        localStorage.setItem('fullscreenPreference', 'true');
+                    }).catch(err => {
+                        console.warn('Error attempting to enable fullscreen:', err);
+                    });
+                } else {
+                    document.exitFullscreen().then(() => {
+                        isFullscreen = false;
+                        if (fullscreenSwitch) fullscreenSwitch.checked = false;
+                        localStorage.setItem('fullscreenPreference', 'false');
+                    }).catch(err => {
+                        console.warn('Error attempting to exit fullscreen:', err);
+                    });
+                }
             }
         }
 
@@ -1013,9 +1067,12 @@
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            // F key or F11 for fullscreen toggle (only if not in an input field)
+            // F key or F11 for fullscreen toggle (only if not in an input field and not on mobile)
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                           (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+            
             if ((e.key === 'f' || e.key === 'F' || e.key === 'F11') && 
-                !e.target.matches('input, textarea, select')) {
+                !e.target.matches('input, textarea, select') && !isMobile) {
                 e.preventDefault();
                 toggleFullscreen();
             }
@@ -1023,9 +1080,15 @@
 
         // Listen for fullscreen changes (e.g., user presses Escape)
         document.addEventListener('fullscreenchange', () => {
-            isFullscreen = !!document.fullscreenElement;
-            if (fullscreenSwitch) fullscreenSwitch.checked = isFullscreen;
-            localStorage.setItem('fullscreenPreference', isFullscreen.toString());
+            // Only handle this for desktop - mobile uses custom implementation
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                           (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+            
+            if (!isMobile) {
+                isFullscreen = !!document.fullscreenElement;
+                if (fullscreenSwitch) fullscreenSwitch.checked = isFullscreen;
+                localStorage.setItem('fullscreenPreference', isFullscreen.toString());
+            }
         });
 
         document.addEventListener('click', (e) => {
