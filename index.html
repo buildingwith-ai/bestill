@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>Be Still</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,6 +57,22 @@
             --icon-color: #c8d4e0;
             --gradient-start: #1c232b;
             --gradient-end: #10141a;
+        }
+
+        /* Prevent double-tap zoom on mobile */
+        * {
+            touch-action: manipulation;
+        }
+
+        /* Specifically prevent zoom around interactive elements */
+        button, .neumorphic-button, .neumorphic-card {
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         /* Apply variables */
@@ -120,6 +136,11 @@
             transform: scale(0.96);
         }
 
+        /* Additional mobile-specific touch handling */
+        .neumorphic-button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
         .neumorphic-card {
             padding: 1.5rem;
             border-radius: 1rem;
@@ -142,6 +163,15 @@
         body.faq-mode .neumorphic-card {
             opacity: 0;
             visibility: hidden;
+        }
+
+        /* Prevent text selection on verse content to avoid zoom triggers */
+        #verse-text, #verse-reference {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
 
         @media (min-width: 640px) {
