@@ -914,44 +914,27 @@
                 // Mobile fullscreen implementation
                 if (!isFullscreen) {
                     // Enter mobile fullscreen
-                    document.body.style.position = 'fixed';
-                    document.body.style.top = '0';
-                    document.body.style.left = '0';
-                    document.body.style.width = '100vw';
-                    document.body.style.height = '100vh';
-                    document.body.style.overflow = 'hidden';
-                    document.body.style.zIndex = '9999';
+                    document.documentElement.classList.add('mobile-fullscreen-active');
+                    document.body.classList.add('mobile-fullscreen-active');
                     
                     // Hide address bar on mobile
                     window.scrollTo(0, 1);
-                    setTimeout(() => window.scrollTo(0, 0), 100);
-                    
-                    // Try native fullscreen as fallback
-                    if (document.documentElement.requestFullscreen) {
-                        document.documentElement.requestFullscreen().catch(() => {
-                            // Ignore errors on mobile
-                        });
-                    }
+                    setTimeout(() => {
+                        window.scrollTo(0, 1);
+                        // Additional attempt to hide address bar
+                        setTimeout(() => window.scrollTo(0, 0), 50);
+                    }, 100);
                     
                     isFullscreen = true;
                     if (fullscreenSwitch) fullscreenSwitch.checked = true;
                     localStorage.setItem('fullscreenPreference', 'true');
                 } else {
                     // Exit mobile fullscreen
-                    document.body.style.position = '';
-                    document.body.style.top = '';
-                    document.body.style.left = '';
-                    document.body.style.width = '';
-                    document.body.style.height = '';
-                    document.body.style.overflow = '';
-                    document.body.style.zIndex = '';
+                    document.documentElement.classList.remove('mobile-fullscreen-active');
+                    document.body.classList.remove('mobile-fullscreen-active');
                     
-                    // Try native fullscreen exit as fallback
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen().catch(() => {
-                            // Ignore errors on mobile
-                        });
-                    }
+                    // Reset scroll position
+                    window.scrollTo(0, 0);
                     
                     isFullscreen = false;
                     if (fullscreenSwitch) fullscreenSwitch.checked = false;
